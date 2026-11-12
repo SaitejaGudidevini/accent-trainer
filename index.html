@@ -18,29 +18,36 @@
   * { box-sizing: border-box; }
   body { margin:0; font-family: -apple-system, system-ui, sans-serif; background:var(--bg); color:var(--text); }
   main { max-width: 1000px; margin: 0 auto; padding: 24px 20px 60px; }
+  main { padding-top: max(24px, env(safe-area-inset-top)); padding-bottom: max(60px, env(safe-area-inset-bottom)); }
   h1 { font-size: 22px; margin: 0 0 4px; }
+  h2 { font-size: 17px; margin: 0 0 10px; }
+  h3 { font-size: 14px; margin: 14px 0 6px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
   .sub { color: var(--muted); font-size: 14px; margin-bottom: 18px; }
   .bar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:16px; }
   button { background: var(--card); color: var(--text); border:1px solid var(--line); border-radius:10px;
-           padding:10px 16px; font-size:15px; cursor:pointer; }
+           padding:10px 16px; font-size:15px; cursor:pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
   button:hover:not(:disabled) { border-color: var(--muted); }
   button:disabled { opacity:.4; cursor:default; }
   button.on { background:#334155; border-color:var(--ref); }
   button.primary { background:#0369a1; border-color:#0369a1; }
   button.rec { background:#b91c1c; border-color:#b91c1c; }
   button.rec.live { animation: pulse 1s infinite; }
+  button.small { padding: 6px 10px; font-size: 13px; }
   @keyframes pulse { 50% { opacity:.6; } }
-  select { background:var(--card); color:var(--text); border:1px solid var(--line); border-radius:10px; padding:9px; font-size:14px; }
+  select, input { background:var(--card); color:var(--text); border:1px solid var(--line); border-radius:10px; padding:9px; font-size:14px; }
+  input { width: 100%; }
   .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px; margin-bottom:16px; }
   .words { display:flex; flex-wrap:wrap; gap:14px 18px; align-items:flex-start; }
-  .w { display:flex; flex-direction:column; align-items:center; padding:6px 8px; border-radius:8px; transition: background .1s; }
+  .w { display:flex; flex-direction:column; align-items:center; padding:6px 8px; border-radius:8px; transition: background .1s; border-bottom: 3px solid transparent; }
   .w .txt { font-size: 22px; font-weight: 500; }
   .w .syl { margin-top: 6px; font-family: ui-monospace, Menlo, monospace; font-size: 14px; color: var(--muted); }
   .w .syl b { color: var(--stress); font-size: 17px; }
   .w .syl i { font-style: normal; opacity:.5; }
+  .w .issue { font-size: 11px; margin-top: 4px; max-width: 130px; text-align: center; line-height: 1.25; }
   .w.now { background:#0c4a6e; }
   .legend { color:var(--muted); font-size:13px; margin-top:14px; }
   .legend b { color: var(--stress); }
+  .focus { color: var(--ref); font-size: 14px; margin-bottom: 10px; }
   .scores { display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-bottom:14px; }
   .score { background:#0f172a; border-radius:12px; padding:14px; text-align:center; }
   .score .n { font-size: 34px; font-weight: 700; }
@@ -54,8 +61,17 @@
   .hidden { display:none; }
   .hint { color:var(--muted); font-size:13px; }
   kbd { background:#334155; border-radius:4px; padding:1px 6px; font-size:12px; }
-  main { padding-top: max(24px, env(safe-area-inset-top)); padding-bottom: max(60px, env(safe-area-inset-bottom)); }
-  button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  table { width:100%; border-collapse: collapse; font-size: 14px; }
+  td, th { text-align:left; padding: 6px 4px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 500; }
+  .meter { height: 8px; background:#0f172a; border-radius: 4px; overflow: hidden; min-width: 60px; }
+  .meter div { height: 100%; }
+  .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .diag li { margin-bottom: 10px; line-height: 1.5; }
+  .diag .ev { color: var(--muted); font-size: 13px; }
+  .drill { display:flex; justify-content: space-between; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .drill .f { color: var(--muted); font-size: 12px; }
+  details summary { cursor: pointer; color: var(--muted); font-size: 14px; }
   @media (hover: none) { kbd { display:none; } }
   @media (max-width: 640px) {
     main { padding-left: 14px; padding-right: 14px; }
@@ -70,13 +86,14 @@
     canvas { height: 240px; }
     .bar button { padding: 10px 12px; font-size: 14px; }
     #playRef, #rec { flex: 1 1 40%; }
+    .grid2 { grid-template-columns: 1fr; }
   }
 </style>
 </head>
 <body>
 <main>
   <h1>American Accent Shadowing</h1>
-  <div class="sub">Listen &rarr; read the syllables &rarr; record yourself &rarr; compare your rhythm and melody with the American voice.</div>
+  <div class="sub">Listen &rarr; read the syllables &rarr; record yourself &rarr; compare. Every attempt is saved so your coach can find your repeat mistakes.</div>
 
   <div class="bar" id="levels">
     <button data-level="word">Word</button>
@@ -84,12 +101,15 @@
     <button data-level="sentence">Sentence</button>
     <button data-level="paragraph">Paragraph</button>
     <button data-level="any">Any</button>
+    <button data-level="flaws">&#127919; My flaws</button>
+    <button data-level="coach" id="coachLevel" class="hidden">&#129302; Coach drills</button>
     <button id="next" class="primary">New random &#x21bb;</button>
   </div>
 
   <div class="card">
+    <div class="focus hidden" id="focus"></div>
     <div class="words" id="words"></div>
-    <div class="legend"><b>BIG GOLD CAPS</b> = hit it hard, loud and long. <i style="opacity:.6">small grey</i> = say it fast and lazy ("uh"). Spelling shows the American sound (t &rarr; d in "WAH-der").</div>
+    <div class="legend"><b>BIG GOLD CAPS</b> = hit it hard, loud and long. <i style="opacity:.6">small grey</i> = say it fast and lazy ("uh"). Spelling shows the American sound (t &rarr; d in "WAH-der"). After recording, the line under each word turns green / yellow / red.</div>
   </div>
 
   <div class="bar">
@@ -120,51 +140,143 @@
   <div class="card">
     <div class="stats" id="stats"></div>
   </div>
+
+  <div class="card">
+    <h2>&#127919; My flaws</h2>
+    <div class="hint" id="flawsEmpty">Record a few attempts and your repeat mistakes will show up here.</div>
+    <div class="grid2" id="flawsBody">
+      <div><h3>Weakest words</h3><div id="weakWords"></div></div>
+      <div><h3>Mistakes you repeat</h3><div id="issueList"></div><h3>Sound groups</h3><div id="groupList"></div></div>
+    </div>
+    <div class="bar" style="margin:16px 0 0">
+      <button id="drillFlaws" class="primary">&#127919; Drill my flaws</button>
+      <button id="askCoach">&#129302; Ask Gemini coach</button>
+      <button id="exportPack">&#128230; Export coach pack</button>
+      <button id="backupAll" class="small">Back up all recordings</button>
+      <span class="hint" id="coachStatus"></span>
+    </div>
+  </div>
+
+  <div class="card hidden" id="coachCard">
+    <h2>&#129302; Coach says</h2>
+    <div class="hint" id="coachWhen"></div>
+    <ul class="diag" id="diagnosis"></ul>
+    <div id="nextFocus" class="focus"></div>
+    <h3>Your custom drills</h3>
+    <div id="drills"></div>
+  </div>
+
+  <div class="card">
+    <details id="settings">
+      <summary>&#9881; Gemini coach settings</summary>
+      <p class="hint">Get a free key at <b>aistudio.google.com &rarr; Get API key</b>. The key is stored only on this device. When you press <i>Ask Gemini coach</i>, your weakest recent recordings and their word reports are sent to Google. On Google's free tier, Google may use that data to improve its products.</p>
+      <div class="grid2">
+        <label class="hint">API key<input id="gKey" type="password" placeholder="AIza…" autocomplete="off"></label>
+        <label class="hint">Model<input id="gModel" placeholder="gemini-3.8-flash"></label>
+      </div>
+      <div class="bar" style="margin:12px 0 0"><button id="saveKey" class="small">Save</button><span class="hint" id="keyStatus"></span></div>
+    </details>
+  </div>
 </main>
 
 <script src="data.js"></script>
 <script>
-// ---------- state ----------
+// ======================================================================
+// State
+// ======================================================================
 const $ = id => document.getElementById(id);
+const DEFAULT_MODEL = 'gemini-3.8-flash';
 let level = localStorage.getItem('aa-level') || 'sentence';
 let item = null, refBuf = null, refAnalysis = null, myBlob = null, myUrl = null;
-let refAudio = new Audio(), myAudio = new Audio();
-let recorder = null, chunks = [], stream = null;
-let actx = null;
+const refAudio = new Audio(), myAudio = new Audio();
+let recorder = null, chunks = [], stream = null, actx = null;
 const ctx = () => (actx ||= new AudioContext());
+const normWord = w => w.toLowerCase().replace(/[’]/g, "'").replace(/[^a-z0-9']/g, '');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-// ---------- picking text ----------
-function pick() {
-  const pool = BANK.filter(b => level === 'any' || b.level === level);
+// ======================================================================
+// Storage: every attempt (audio + scores + word report) lives in IndexedDB on this device
+// ======================================================================
+let dbp = null;
+function db() {
+  return dbp ||= new Promise((res, rej) => {
+    const r = indexedDB.open('accent-trainer', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('attempts', { keyPath: 'id', autoIncrement: true });
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  });
+}
+async function dbAdd(rec) {
+  const d = await db();
+  return new Promise((res, rej) => { const t = d.transaction('attempts', 'readwrite'); const q = t.objectStore('attempts').add(rec); q.onsuccess = () => res(q.result); t.onerror = () => rej(t.error); });
+}
+async function dbAll() {
+  const d = await db();
+  return new Promise((res, rej) => { const q = d.transaction('attempts').objectStore('attempts').getAll(); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); });
+}
+navigator.storage?.persist?.();   // ask the browser not to auto-delete recordings
+
+// ======================================================================
+// Picking texts
+// ======================================================================
+function coachDrills() { return (JSON.parse(localStorage.getItem('aa-coach') || 'null') || {}).drills || []; }
+
+async function pick() {
+  let pool;
+  if (level === 'flaws') return pickFlaws();
+  if (level === 'coach') pool = coachDrills();
+  else pool = BANK.filter(b => level === 'any' || b.level === level);
+  if (!pool.length) { pool = BANK; }
   let next;
   do { next = pool[Math.floor(Math.random() * pool.length)]; } while (pool.length > 1 && item && next.id === item.id);
   load(next);
 }
 
+// Choose a bank text that contains the words you get wrong most.
+async function pickFlaws() {
+  const st = flawStats(await dbAll());
+  const weak = {};
+  st.words.forEach(w => { weak[w.key] = (100 - w.avg) * Math.log(1 + w.n); });
+  const scored = BANK.map(b => {
+    const s = b.words.reduce((t, w) => t + (weak[normWord(w)] || 0), 0) / Math.sqrt(b.words.length);
+    return { b, s };
+  }).filter(x => x.s > 0 && (!item || x.b.id !== item.id)).sort((a, b) => b.s - a.s);
+  if (!scored.length) { $('status').textContent = 'No flaws recorded yet — showing a random sentence.'; level = 'sentence'; return pick(); }
+  const top = scored.slice(0, 5);
+  load(top[Math.floor(Math.random() * top.length)].b);
+}
+
 async function load(it) {
-  item = it; refAnalysis = null; myBlob = null;
+  item = it; refAnalysis = null; refBuf = null; myBlob = null;
   $('result').classList.add('hidden');
   $('playMe').disabled = $('playBoth').disabled = true;
   $('status').textContent = '';
+  $('focus').classList.toggle('hidden', !it.focus);
+  $('focus').textContent = it.focus ? 'Coach focus: ' + it.focus : '';
   renderWords();
-  refAudio.src = it.audio;
-  const buf = await (await fetch(it.audio)).arrayBuffer();
-  refBuf = await ctx().decodeAudioData(buf);
-  refAnalysis = analyze(refBuf);
+  renderStats();
+  if (it.audio) {
+    refAudio.src = it.audio;
+    const buf = await (await fetch(it.audio)).arrayBuffer();
+    refBuf = await ctx().decodeAudioData(buf);
+    refAnalysis = analyze(refBuf);
+  }
 }
 
-function renderWords() {
+function renderWords(report) {
   $('words').innerHTML = item.words.map((w, i) => {
-    const syl = item.syl[i].split('-').map(s =>
-      /[a-z]/.test(s) ? `<i>${s}</i>` : `<b>${s}</b>`).join('<span style="opacity:.4">·</span>');
-    return `<div class="w" id="w${i}"><div class="txt">${w}</div><div class="syl">${syl}</div></div>`;
+    const syl = (item.syl[i] || '').split('-').map(s =>
+      /[a-z]/.test(s) ? `<i>${esc(s)}</i>` : `<b>${esc(s)}</b>`).join('<span style="opacity:.4">·</span>');
+    const r = report && report[i];
+    const style = r && r.score != null ? `style="border-bottom-color:${color(r.score)}"` : '';
+    const issue = r && r.issues.length ? `<div class="issue" style="color:${color(r.score)}">${esc(ISSUES[r.issues[0]].short)}</div>` : '';
+    return `<div class="w" id="w${i}" ${style}><div class="txt">${esc(w)}</div><div class="syl">${syl}</div>${issue}</div>`;
   }).join('');
 }
 
 // karaoke highlight while the American voice plays
 function tick() {
   const t = refAudio.currentTime;
-  item && item.timings.forEach((tm, i) => {
+  item && item.timings && item.timings.forEach((tm, i) => {
     const el = $('w' + i);
     if (el) el.classList.toggle('now', !refAudio.paused && tm && t >= tm[0] && t <= tm[1] + 0.05);
   });
@@ -172,28 +284,44 @@ function tick() {
 }
 requestAnimationFrame(tick);
 
-// ---------- playback ----------
+// ======================================================================
+// Playback
+// ======================================================================
+function speakFallback(text, rate) {   // coach drills have no recorded voice: use the device's American voice
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  const vs = speechSynthesis.getVoices().filter(v => v.lang === 'en-US');
+  u.voice = vs.find(v => /Samantha|Google US English|Aaron|Nicky|Alex/.test(v.name)) || vs[0] || null;
+  u.lang = 'en-US'; u.rate = rate;
+  speechSynthesis.speak(u);
+  return u;
+}
 function playRef() {
   myAudio.pause();
-  refAudio.playbackRate = parseFloat($('speed').value);
+  const rate = parseFloat($('speed').value);
+  if (!item.audio) return speakFallback(item.text, rate);
+  refAudio.playbackRate = rate;
   refAudio.currentTime = 0; refAudio.play();
 }
 function playMe() { refAudio.pause(); if (myUrl) { myAudio.src = myUrl; myAudio.play(); } }
 function playBoth() {
   // iPhone only lets audio start from a tap: "unlock" my clip now so it can auto-play after the American one.
   if (myUrl) { myAudio.src = myUrl; myAudio.play().then(() => myAudio.pause()).catch(() => {}); }
+  if (!item.audio) { const u = speakFallback(item.text, 1); u.onend = () => setTimeout(playMe, 400); return; }
   refAudio.playbackRate = 1; refAudio.currentTime = 0; refAudio.play();
   refAudio.onended = () => { refAudio.onended = null; setTimeout(playMe, 400); };
 }
 
-// ---------- recording ----------
+// ======================================================================
+// Recording
+// ======================================================================
 async function toggleRec() {
   if (recorder && recorder.state === 'recording') { recorder.stop(); return; }
-  refAudio.pause(); myAudio.pause();
+  refAudio.pause(); myAudio.pause(); speechSynthesis.cancel();
   try {
     stream ||= await navigator.mediaDevices.getUserMedia({
       audio: { echoCancellation: false, noiseSuppression: true, autoGainControl: false } });
-  } catch (e) { $('status').textContent = 'Microphone blocked — allow it in the browser address bar.'; return; }
+  } catch (e) { $('status').textContent = 'Microphone blocked — allow it in the browser settings.'; return; }
   chunks = [];
   recorder = new MediaRecorder(stream);
   recorder.ondataavailable = e => chunks.push(e.data);
@@ -210,27 +338,70 @@ async function onRecorded() {
   myUrl = URL.createObjectURL(myBlob);
   $('playMe').disabled = $('playBoth').disabled = false;
   $('status').textContent = 'Scoring…';
+  const rec = { ts: Date.now(), date: today(), textId: item.id, level: item.level, text: item.text, syl: item.syl,
+                focus: item.focus || null, audio: myBlob, mime: myBlob.type, overall: null, words: null };
   try {
     const buf = await ctx().decodeAudioData(await myBlob.arrayBuffer());
+    rec.dur = +buf.duration.toFixed(2);
     const mine = analyze(buf);
     if (!mine) { $('status').textContent = "Couldn't hear you — try again a bit louder."; return; }
-    showResult(compare(refAnalysis, mine));
-    $('status').textContent = '';
+    if (refAnalysis) {
+      const r = compare(refAnalysis, mine);
+      const words = wordReport(item, refAnalysis, mine, r.ratio);
+      Object.assign(rec, { overall: r.overall, rhythm: r.rhythm, melody: r.melody, pace: r.pace,
+                           ratio: +r.ratio.toFixed(2), contrast: +r.contrast.toFixed(2), words });
+      showResult(r, words);
+      renderWords(words);
+      saveHistory(r);
+      $('status').textContent = 'Saved ✓';
+    } else {
+      $('status').textContent = 'Saved ✓ — coach drills are checked by Gemini next time you press "Ask Gemini coach".';
+    }
+    await dbAdd(rec);
+    renderFlaws();
   } catch (e) { console.error(e); $('status').textContent = 'Could not analyse that recording.'; }
 }
 
-// ---------- signal analysis ----------
-// Turns audio into two curves: loudness (dB) and pitch (Hz) every 10 ms.
+// ======================================================================
+// Signal analysis: audio -> loudness, pitch and spectrum, every 10 ms
+// ======================================================================
+function fft(re, im) {
+  const n = re.length;
+  for (let i = 1, j = 0; i < n; i++) { let bit = n >> 1; for (; j & bit; bit >>= 1) j ^= bit; j ^= bit; if (i < j) { [re[i], re[j]] = [re[j], re[i]]; [im[i], im[j]] = [im[j], im[i]]; } }
+  for (let len = 2; len <= n; len <<= 1) {
+    const ang = -2 * Math.PI / len, wr = Math.cos(ang), wi = Math.sin(ang);
+    for (let i = 0; i < n; i += len) {
+      let cr = 1, ci = 0;
+      for (let k = 0; k < len / 2; k++) {
+        const a = i + k, b = a + len / 2, tr = re[b] * cr - im[b] * ci, ti = re[b] * ci + im[b] * cr;
+        re[b] = re[a] - tr; im[b] = im[a] - ti; re[a] += tr; im[a] += ti;
+        const nr = cr * wr - ci * wi; ci = cr * wi + ci * wr; cr = nr;
+      }
+    }
+  }
+}
+
 function analyze(audioBuf) {
   const raw = audioBuf.getChannelData(0), sr0 = audioBuf.sampleRate;
   const f = Math.max(1, Math.round(sr0 / 12000)), sr = sr0 / f;      // downsample ~12 kHz
   const x = new Float32Array(Math.floor(raw.length / f));
   for (let i = 0; i < x.length; i++) { let s = 0; for (let k = 0; k < f; k++) s += raw[i * f + k]; x[i] = s / f; }
-  const hop = Math.round(sr * 0.01), win = Math.round(sr * 0.04);
-  const db = [], pitch = [];
+  const hop = Math.round(sr * 0.01), win = Math.round(sr * 0.04), hopSec = hop / sr;
+  const db = [], pitch = [], spec = [];
+  // spectrum bands (for lining up your words with the American's)
+  const NF = 512, NB = 16, edges = [];
+  for (let b = 0; b <= NB; b++) edges.push(Math.min(NF / 2 - 1, Math.round(100 * Math.pow(5500 / 100, b / NB) / (sr / NF))));
+  const hann = Float32Array.from({ length: win }, (_, i) => 0.5 - 0.5 * Math.cos(2 * Math.PI * i / (win - 1)));
+  const re = new Float32Array(NF), im = new Float32Array(NF);
   for (let st = 0; st + win <= x.length; st += hop) {
     let e = 0; for (let i = 0; i < win; i++) e += x[st + i] ** 2;
     db.push(10 * Math.log10(e / win + 1e-12));
+    re.fill(0); im.fill(0);
+    for (let i = 0; i < win && i < NF; i++) re[i] = x[st + i] * hann[i];
+    fft(re, im);
+    const v = new Float32Array(NB);
+    for (let b = 0; b < NB; b++) { let s = 0; for (let k = edges[b]; k <= Math.max(edges[b], edges[b + 1] - 1); k++) s += re[k] * re[k] + im[k] * im[k]; v[b] = Math.log(s + 1e-9); }
+    spec.push(v);
   }
   if (db.length < 10) return null;
   const sorted = [...db].sort((a, b) => a - b);
@@ -256,53 +427,164 @@ function analyze(audioBuf) {
   const active = db.map(d => d > top - 35);
   let a = active.indexOf(true), b = active.lastIndexOf(true);
   a = Math.max(0, a - 3); b = Math.min(db.length - 1, b + 3);
-  const D = db.slice(a, b + 1), P = pitch.slice(a, b + 1);
-  // loudness 0..1 (40 dB range), lightly smoothed
+  const D = db.slice(a, b + 1), P = pitch.slice(a, b + 1), S = spec.slice(a, b + 1);
   const env = smooth(D.map(d => Math.min(1, Math.max(0, (d - (top - 40)) / 40))), 3);
   // pitch in semitones relative to the speaker's own median (so male/female voices compare fairly)
   const voiced = P.filter(p => p > 0).sort((p, q) => p - q);
   const med = voiced[Math.floor(voiced.length / 2)] || 1;
   let semi = medianFilter(P.map(p => p > 0 ? 12 * Math.log2(p / med) : NaN), 5);
   semi = semi.map(v => Math.abs(v) > 12 ? NaN : v);                  // drop octave jumps
-  return { env, semi, dur: D.length * 0.01, voicedFrac: voiced.length / P.length };
+  // normalise spectrum per band (removes microphone / voice colour differences)
+  const mean = new Float32Array(NB), sd = new Float32Array(NB);
+  S.forEach(v => v.forEach((y, k) => mean[k] += y / S.length));
+  S.forEach(v => v.forEach((y, k) => sd[k] += (y - mean[k]) ** 2 / S.length));
+  const feats = S.map(v => Float32Array.from(v, (y, k) => (y - mean[k]) / (Math.sqrt(sd[k]) + 1e-6)));
+  return { env, semi, feats, hopSec, t0: a * hopSec, dur: D.length * hopSec, voicedFrac: voiced.length / P.length };
 }
 
 function smooth(a, r) { return a.map((_, i) => { let s = 0, n = 0; for (let k = i - r; k <= i + r; k++) if (k >= 0 && k < a.length) { s += a[k]; n++; } return s / n; }); }
 function medianFilter(a, w) { const h = w >> 1; return a.map((v, i) => { if (isNaN(v)) return v; const s = a.slice(Math.max(0, i - h), i + h + 1).filter(x => !isNaN(x)).sort((p, q) => p - q); return s[s.length >> 1]; }); }
 function resample(a, n) { return Array.from({ length: n }, (_, i) => { const t = i * (a.length - 1) / (n - 1), lo = Math.floor(t), hi = Math.min(a.length - 1, lo + 1), f = t - lo; const A = a[lo], B = a[hi]; if (isNaN(A)) return B; if (isNaN(B)) return A; return A * (1 - f) + B * f; }); }
 function corr(a, b) { const n = a.length; if (n < 8) return NaN; const ma = a.reduce((s, v) => s + v, 0) / n, mb = b.reduce((s, v) => s + v, 0) / n; let c = 0, va = 0, vb = 0; for (let i = 0; i < n; i++) { c += (a[i] - ma) * (b[i] - mb); va += (a[i] - ma) ** 2; vb += (b[i] - mb) ** 2; } return c / Math.sqrt(va * vb + 1e-12); }
-function std(a) { const m = a.reduce((s, v) => s + v, 0) / a.length; return Math.sqrt(a.reduce((s, v) => s + (v - m) ** 2, 0) / a.length); }
+function std(a) { if (!a.length) return 0; const m = a.reduce((s, v) => s + v, 0) / a.length; return Math.sqrt(a.reduce((s, v) => s + (v - m) ** 2, 0) / a.length); }
 const clamp = v => Math.max(0, Math.min(100, Math.round(v)));
+const meanOf = a => { const b = a.filter(v => !isNaN(v)); return b.length ? b.reduce((s, v) => s + v, 0) / b.length : NaN; };
 
-// ---------- scoring ----------
+// ======================================================================
+// Whole-recording scores
+// ======================================================================
 function compare(ref, me) {
   const N = Math.max(40, Math.min(400, Math.round(ref.dur * 25)));
   const rE = resample(ref.env, N), mE = resample(me.env, N);
-  // Rhythm: do your loud beats land in the same places as the American's?
   const rC = corr(smooth(rE, 1), smooth(mE, 1));
   const rhythm = clamp((rC - 0.15) / 0.65 * 100);
-  // Melody: does your pitch rise and fall in the same places?
   const rS = resample(ref.semi, N), mS = resample(me.semi, N);
   const idx = rS.map((v, i) => i).filter(i => !isNaN(rS[i]) && !isNaN(mS[i]));
   const mC = corr(idx.map(i => rS[i]), idx.map(i => mS[i]));
   const melody = idx.length < 10 || isNaN(mC) ? null : clamp(mC / 0.75 * 100);
-  // Pace: total time compared with the American (speed setting ignored — compared at 1.0x)
   const ratio = me.dur / ref.dur;
   const pace = clamp(100 * Math.exp(-Math.abs(Math.log(ratio)) * 1.8));
-  // Stress contrast: how big the gap between loud and soft syllables is
   const contrast = std(me.env.filter(v => v > 0.05)) / (std(ref.env.filter(v => v > 0.05)) || 1);
   const overall = clamp(melody == null ? rhythm * 0.7 + pace * 0.3 : rhythm * 0.45 + melody * 0.35 + pace * 0.2);
   return { overall, rhythm, melody, pace, ratio, contrast, rE, mE, rS, mS };
 }
 
+// ======================================================================
+// Word-by-word check
+// 1) Line up your recording with the American one (dynamic time warping: like matching two
+//    people walking the same route at different speeds).
+// 2) For each word, compare loudness, length and pitch against the American version.
+// ======================================================================
+const ISSUES = {
+  'weak-stress': { short: 'stress too weak', long: 'Main syllable too weak — punch it louder and longer' },
+  'over-stress': { short: 'too strong', long: 'Small word said too strongly — throw it away ("uh", "thuh")' },
+  'not-reduced': { short: 'too long — squash it', long: 'Small word too long — squash it, say it fast' },
+  'rushed':      { short: 'rushed — stretch it', long: 'Stressed word rushed — stretch the stressed syllable' },
+  'dragged':     { short: 'dragged out', long: 'Word dragged out — keep the flow moving' },
+  'pitch-low':   { short: 'lift your voice', long: 'Voice too low / flat on this word — lift your pitch here' },
+  'pitch-high':  { short: 'pitch too high', long: 'Pitch jumped too high on this word' },
+};
+const GROUPS = {
+  'flap-t': 'Flap T (water → WAH-der)', 'r': 'American R', 'th': 'TH sound', 'v-w': 'V / W',
+  'weak-word': 'Small words (a, the, to, of…)', 'stress-word': 'Main stressed words',
+};
+function soundGroups(word, syl) {
+  const w = word.toLowerCase(), g = [];
+  if (/[aeiouy]t+(?:[aeiouy]|le\b|l\b)/.test(w) && /d/i.test(syl)) g.push('flap-t');
+  if (/r/.test(w)) g.push('r');
+  if (/th/.test(w)) g.push('th');
+  if (/[vw]/.test(w)) g.push('v-w');
+  g.push(/[A-Z]{2,}|^[A-Z]$/.test(syl) ? 'stress-word' : 'weak-word');
+  return g;
+}
+
+function dtw(A, B) {
+  const n = A.length, m = B.length, d = A[0].length, INF = 1e30;
+  const D = new Float32Array(n * m).fill(INF);
+  const band = Math.max(25, Math.round(0.3 * Math.max(n, m)));
+  for (let i = 0; i < n; i++) {
+    const jc = Math.round(i * (m - 1) / Math.max(1, n - 1));
+    for (let j = Math.max(0, jc - band); j <= Math.min(m - 1, jc + band); j++) {
+      let c = 0; for (let k = 0; k < d; k++) { const t = A[i][k] - B[j][k]; c += t * t; }
+      c = Math.sqrt(c);
+      const best = i === 0 && j === 0 ? 0 : Math.min(i > 0 ? D[(i - 1) * m + j] : INF, j > 0 ? D[i * m + j - 1] : INF, i > 0 && j > 0 ? D[(i - 1) * m + j - 1] : INF);
+      D[i * m + j] = c + best;
+    }
+  }
+  const lo = new Int32Array(n).fill(m), hi = new Int32Array(n).fill(-1);
+  let i = n - 1, j = m - 1;
+  while (true) {
+    lo[i] = Math.min(lo[i], j); hi[i] = Math.max(hi[i], j);
+    if (i === 0 && j === 0) break;
+    const a = i > 0 && j > 0 ? D[(i - 1) * m + j - 1] : INF, b = i > 0 ? D[(i - 1) * m + j] : INF, c = j > 0 ? D[i * m + j - 1] : INF;
+    if (a <= b && a <= c) { i--; j--; } else if (b <= c) i--; else j--;
+  }
+  return { lo, hi };
+}
+
+function pool(feats, step) {
+  const out = [];
+  for (let i = 0; i < feats.length; i += step) {
+    const v = new Float32Array(feats[0].length); let n = 0;
+    for (let k = i; k < Math.min(feats.length, i + step); k++, n++) feats[k].forEach((y, q) => v[q] += y);
+    out.push(v.map(y => y / n));
+  }
+  return out;
+}
+
+function wordReport(it, ref, me, ratio) {
+  const step = Math.max(1, Math.ceil(Math.max(ref.feats.length, me.feats.length) / 900));
+  const path = dtw(pool(ref.feats, step), pool(me.feats, step));
+  const nR = ref.env.length, nM = me.env.length;
+  const toMe = (rf, side) => {          // ref frame -> my frame
+    const s = Math.min(path.lo.length - 1, Math.max(0, Math.floor(rf / step)));
+    return Math.min(nM - 1, (side === 'lo' ? path.lo[s] : path.hi[s]) * step + (side === 'lo' ? 0 : step - 1));
+  };
+  const peak = (env, a, b) => { let p = 0; for (let k = a; k <= b; k++) p = Math.max(p, env[k] || 0); return p; };
+  const raw = it.words.map((w, i) => {
+    const tm = it.timings && it.timings[i];
+    if (!tm) return null;
+    const r0 = Math.max(0, Math.round((tm[0] - ref.t0) / ref.hopSec)), r1 = Math.min(nR - 1, Math.round((tm[1] - ref.t0) / ref.hopSec));
+    if (r1 <= r0) return null;
+    const m0 = toMe(r0, 'lo'), m1 = Math.max(toMe(r1, 'hi'), m0 + 1);
+    return { r0, r1, m0, m1, rp: peak(ref.env, r0, r1), mp: peak(me.env, m0, m1),
+             rPitch: meanOf(ref.semi.slice(r0, r1 + 1)), mPitch: meanOf(me.semi.slice(m0, m1 + 1)) };
+  });
+  const ok = raw.filter(Boolean);
+  const rMean = meanOf(ok.map(x => x.rp)) || 1, mMean = meanOf(ok.map(x => x.mp)) || 1;
+  return it.words.map((w, i) => {
+    const syl = it.syl[i] || w, groups = soundGroups(w, syl), stressed = groups.includes('stress-word');
+    const x = raw[i];
+    if (!x) return { w, key: normWord(w), syl, groups, score: null, issues: [] };
+    const durRel = ((x.m1 - x.m0 + 1) / (x.r1 - x.r0 + 1)) / ratio;
+    const loudDiff = x.mp / mMean - x.rp / rMean;
+    const pitchDiff = isNaN(x.rPitch) || isNaN(x.mPitch) ? 0 : x.mPitch - x.rPitch;
+    const issues = [];
+    if (stressed && loudDiff < -0.15) issues.push('weak-stress');
+    if (!stressed && loudDiff > 0.15) issues.push('over-stress');
+    if (!stressed && durRel > 1.6) issues.push('not-reduced');
+    if (stressed && durRel < 0.6) issues.push('rushed');
+    if (stressed && durRel > 1.9) issues.push('dragged');
+    if (stressed && pitchDiff < -4.5) issues.push('pitch-low');
+    if (stressed && pitchDiff > 5.5) issues.push('pitch-high');
+    const score = clamp(100 - 140 * Math.max(0, Math.abs(loudDiff) - 0.05) - 40 * Math.max(0, Math.abs(Math.log(durRel)) - 0.15)
+                        - 6 * Math.max(0, Math.abs(pitchDiff) - 1.5));
+    return { w, key: normWord(w), syl, groups, score, issues,
+             at: [+(me.t0 + x.m0 * me.hopSec).toFixed(2), +(me.t0 + (x.m1 + 1) * me.hopSec).toFixed(2)],
+             durRel: +durRel.toFixed(2), loudDiff: +loudDiff.toFixed(2), pitchDiff: +pitchDiff.toFixed(1) };
+  });
+}
+
 function color(v) { return v == null ? 'var(--muted)' : v >= 75 ? 'var(--good)' : v >= 50 ? 'var(--mid)' : 'var(--bad)'; }
 
-function showResult(r) {
+function showResult(r, words) {
   $('result').classList.remove('hidden');
   [['sOverall', r.overall], ['sRhythm', r.rhythm], ['sMelody', r.melody], ['sPace', r.pace]].forEach(([id, v]) => {
     $(id).textContent = v == null ? '–' : v; $(id).style.color = color(v);
   });
   const tips = [];
+  const bad = words.filter(w => w.score != null && w.issues.length).sort((a, b) => a.score - b.score).slice(0, 3);
+  if (bad.length) tips.push('Fix these words first: ' + bad.map(w => `<b style="color:${color(w.score)}">${esc(w.w)}</b> (${esc(ISSUES[w.issues[0]].short)})`).join(', ') + '.');
   if (r.contrast < 0.8) tips.push(`Your loud and soft syllables are too even (${Math.round(r.contrast * 100)}% of the American contrast). Punch the <b style="color:var(--stress)">GOLD</b> syllables harder and squash the grey ones.`);
   else if (r.contrast > 1.4) tips.push('You are over-punching — keep the stressed syllables strong but let the weak ones flow, don\'t chop.');
   if (r.rhythm < 60) tips.push('Your stress beats land in different places. Play at 0.7× and tap the table on each gold syllable, then say it again.');
@@ -312,7 +594,6 @@ function showResult(r) {
   if (!tips.length) tips.push('Great match! Try a longer level or switch to "Any".');
   $('tips').innerHTML = tips.map(t => `<li>${t}</li>`).join('');
   draw(r);
-  saveHistory(r);
 }
 
 function draw(r) {
@@ -340,7 +621,9 @@ function draw(r) {
   line(r.rS, '#38bdf8', half + 34, half - 30, lo, hi); line(r.mS, '#fb923c', half + 34, half - 30, lo, hi);
 }
 
-// ---------- daily history ----------
+// ======================================================================
+// Daily stats (small, in localStorage)
+// ======================================================================
 function today() { return new Date().toLocaleDateString('en-CA'); }
 function saveHistory(r) {
   const h = JSON.parse(localStorage.getItem('aa-history') || '[]');
@@ -365,24 +648,272 @@ function renderStats() {
     <div>Total tries<br><b>${h.length}</b></div>`;
 }
 
-// ---------- wiring ----------
+// ======================================================================
+// Flaw finder: add up word reports across your saved attempts
+// ======================================================================
+function flawStats(atts, lastN = 300) {
+  const recent = atts.filter(a => a.words).slice(-lastN);
+  const words = {}, issues = {}, groups = {};
+  recent.forEach(a => a.words.forEach(w => {
+    if (w.score == null) return;
+    const W = words[w.key] ||= { key: w.key, w: w.w.replace(/[^\w']/g, ''), syl: w.syl, n: 0, sum: 0, issues: {} };
+    W.n++; W.sum += w.score;
+    w.issues.forEach(k => { W.issues[k] = (W.issues[k] || 0) + 1; issues[k] = (issues[k] || 0) + 1; });
+    w.groups.forEach(gk => { const G = groups[gk] ||= { n: 0, sum: 0 }; G.n++; G.sum += w.score; });
+  }));
+  const wl = Object.values(words).map(W => ({ ...W, avg: Math.round(W.sum / W.n),
+    top: Object.entries(W.issues).sort((a, b) => b[1] - a[1])[0]?.[0] || null }));
+  return {
+    attempts: recent.length,
+    words: wl,
+    weakest: wl.filter(w => w.top).sort((a, b) => (a.avg - b.avg) || (b.n - a.n)).slice(0, 10),
+    issues: Object.entries(issues).sort((a, b) => b[1] - a[1]),
+    groups: Object.entries(groups).map(([k, G]) => [k, Math.round(G.sum / G.n), G.n]).sort((a, b) => a[1] - b[1]),
+  };
+}
+
+async function renderFlaws() {
+  const atts = await dbAll();
+  const st = flawStats(atts);
+  const has = st.attempts > 0;
+  $('flawsEmpty').classList.toggle('hidden', has);
+  $('flawsBody').classList.toggle('hidden', !has);
+  if (!has) return;
+  const meter = v => `<div class="meter"><div style="width:${v}%;background:${color(v)}"></div></div>`;
+  $('weakWords').innerHTML = st.weakest.length ? `<table><tr><th>Word</th><th>Score</th><th>Usual mistake</th></tr>` +
+    st.weakest.map(w => `<tr><td><b>${esc(w.w)}</b><br><span class="hint">${esc(w.syl)} · ${w.n}×</span></td><td>${meter(w.avg)}${w.avg}</td><td class="hint">${esc(ISSUES[w.top].long)}</td></tr>`).join('') + '</table>'
+    : '<div class="hint">No repeat problem words yet — nice.</div>';
+  $('issueList').innerHTML = st.issues.length ? '<table>' + st.issues.slice(0, 6).map(([k, n]) => `<tr><td>${esc(ISSUES[k].long)}</td><td><b>${n}×</b></td></tr>`).join('') + '</table>' : '<div class="hint">None yet.</div>';
+  $('groupList').innerHTML = '<table>' + st.groups.map(([k, v, n]) => `<tr><td>${esc(GROUPS[k])}<br><span class="hint">${n} words</span></td><td>${meter(v)}${v}</td></tr>`).join('') + '</table>';
+}
+
+// ======================================================================
+// Coach pack: a report any AI can read + your worst recordings as WAV files
+// ======================================================================
+async function toWav16k(blob) {
+  const buf = await ctx().decodeAudioData(await blob.arrayBuffer());
+  const sr = 16000, off = new OfflineAudioContext(1, Math.ceil(buf.duration * sr), sr);
+  const src = off.createBufferSource(); src.buffer = buf; src.connect(off.destination); src.start();
+  const pcm = (await off.startRendering()).getChannelData(0);
+  const out = new DataView(new ArrayBuffer(44 + pcm.length * 2));
+  const str = (o, s) => [...s].forEach((ch, i) => out.setUint8(o + i, ch.charCodeAt(0)));
+  str(0, 'RIFF'); out.setUint32(4, 36 + pcm.length * 2, true); str(8, 'WAVE'); str(12, 'fmt ');
+  out.setUint32(16, 16, true); out.setUint16(20, 1, true); out.setUint16(22, 1, true); out.setUint32(24, sr, true);
+  out.setUint32(28, sr * 2, true); out.setUint16(32, 2, true); out.setUint16(34, 16, true); str(36, 'data'); out.setUint32(40, pcm.length * 2, true);
+  pcm.forEach((v, i) => out.setInt16(44 + i * 2, Math.max(-1, Math.min(1, v)) * 0x7fff, true));
+  return new Uint8Array(out.buffer);
+}
+
+const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(u8) { let c = 0xFFFFFFFF; for (let i = 0; i < u8.length; i++) c = CRC[(c ^ u8[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function makeZip(files) {   // plain "stored" zip, no compression library needed
+  const enc = new TextEncoder(), parts = [], central = []; let offset = 0;
+  files.forEach(f => {
+    const name = enc.encode(f.name), data = typeof f.data === 'string' ? enc.encode(f.data) : f.data, crc = crc32(data);
+    const h = new DataView(new ArrayBuffer(30));
+    h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(10, 0, true); h.setUint16(12, 33, true);
+    h.setUint32(14, crc, true); h.setUint32(18, data.length, true); h.setUint32(22, data.length, true); h.setUint16(26, name.length, true);
+    const c = new DataView(new ArrayBuffer(46));
+    c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(14, 33, true);
+    c.setUint32(16, crc, true); c.setUint32(20, data.length, true); c.setUint32(24, data.length, true); c.setUint16(28, name.length, true); c.setUint32(42, offset, true);
+    parts.push(h, name, data); central.push(c, name);
+    offset += 30 + name.length + data.length;
+  });
+  const cdSize = central.reduce((s, p) => s + p.byteLength, 0), e = new DataView(new ArrayBuffer(22));
+  e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true); e.setUint32(12, cdSize, true); e.setUint32(16, offset, true);
+  return new Blob([...parts, ...central, e], { type: 'application/zip' });
+}
+
+async function deliver(blob, name) {
+  const file = new File([blob], name, { type: blob.type });
+  if (matchMedia('(hover: none)').matches && navigator.canShare?.({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: name }); return; } catch (e) { if (e.name === 'AbortError') return; }
+  }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+}
+
+// Pick the recordings most worth a coach's ear: lowest scores, different texts, plus recent coach drills.
+function worstAttempts(atts, n) {
+  const recent = atts.slice(-80), seen = new Set(), out = [];
+  const drills = recent.filter(a => a.overall == null).slice(-2);
+  [...drills, ...recent.filter(a => a.overall != null).sort((a, b) => a.overall - b.overall)].forEach(a => {
+    if (out.length < n && !seen.has(a.textId)) { seen.add(a.textId); out.push(a); }
+  });
+  return out;
+}
+
+function attemptNote(a, file) {
+  const lines = [`- **${file}** — "${a.text}"`, `  - Target syllables: ${a.syl.join(' ')}`];
+  if (a.overall != null) {
+    lines.push(`  - Scores: overall ${a.overall}, rhythm ${a.rhythm}, melody ${a.melody ?? 'n/a'}, pace ${a.pace} (speed ${a.ratio}× the American, stress contrast ${a.contrast}× the American)`);
+    const bad = a.words.filter(w => w.issues.length).map(w => `${w.w} @${w.at[0]}–${w.at[1]}s: ${w.issues.map(k => ISSUES[k].short).join(', ')}`);
+    if (bad.length) lines.push(`  - Word problems found by the app: ${bad.join('; ')}`);
+  } else lines.push(`  - Coach drill (no American reference recording, so no app scores)${a.focus ? ' — focus: ' + a.focus : ''}`);
+  return lines.join('\n');
+}
+
+function reportText(atts, st, picked) {
+  const byDay = {};
+  atts.filter(a => a.overall != null).forEach(a => (byDay[a.date] ||= []).push(a.overall));
+  const trend = Object.entries(byDay).slice(-14).map(([d, v]) => `${d}: ${Math.round(v.reduce((s, x) => s + x, 0) / v.length)} avg (${v.length} tries)`);
+  return `# American accent practice report
+
+Learner: native Indian English speaker who also knows British English, learning General American English.
+Generated: ${new Date().toISOString().slice(0, 16).replace('T', ' ')} · Attempts saved: ${atts.length}
+
+## How the app scores
+Each attempt is compared with an American TTS reference (en-US-AndrewNeural). Scores are 0–100.
+Rhythm = do loud stressed beats land in the same places; Melody = pitch rise/fall shape; Pace = total length.
+Word problems come from lining the recording up with the reference and comparing each word's loudness, length and pitch.
+The app CANNOT hear individual sounds (v/w, th, r, vowels) — please judge those from the audio.
+
+## Daily trend
+${trend.join('\n') || 'Not enough data yet.'}
+
+## Weakest words (last ${st.attempts} scored attempts)
+${st.weakest.map(w => `- ${w.w} (${w.syl}): avg ${w.avg}, ${w.n} tries, usually: ${ISSUES[w.top].long}`).join('\n') || 'None yet.'}
+
+## Mistakes repeated most
+${st.issues.map(([k, n]) => `- ${ISSUES[k].long}: ${n} times`).join('\n') || 'None yet.'}
+
+## Sound groups (avg word score)
+${st.groups.map(([k, v, n]) => `- ${GROUPS[k]}: ${v} (${n} words)`).join('\n')}
+
+## Recordings included
+${picked.map(([a, f]) => attemptNote(a, f)).join('\n')}
+`;
+}
+
+const COACH_TASK = `You are an expert American-accent coach for a native Indian English speaker who also knows British English.
+Listen to every recording carefully, together with the app's numbers above.
+1. Find the learner's RECURRING flaws — specific sounds (e.g. retroflex T/D, tapped R, missing flap T, v/w swap, th as t/d, British "aah" in bath words, unreduced vowels) and rhythm/intonation habits. Quote the exact words where you heard each one.
+2. For each flaw give one short, physical fix (what the tongue, lips or voice should do).
+3. Write 6 new practice drills that hammer the top flaws, from short phrases to one longer sentence.`;
+
+const COACH_JSON = `Reply ONLY with JSON in this shape:
+{"diagnosis":[{"flaw":"…","evidence":"words where you heard it","fix":"…"}],
+ "next_focus":"one sentence: what to practise this week",
+ "drills":[{"text":"Practice sentence.","syl":["…one entry per space-separated word…"],"focus":"which flaw this drills"}]}
+For "syl": write each word as American sounds-like syllables joined by "-", stressed syllables in CAPS, unstressed in lowercase,
+flap T written as d (water → "WAH-der", the → "thuh", a → "uh"). The syl array MUST have exactly one entry per word of "text" split on spaces.`;
+
+async function buildPack(all) {
+  $('coachStatus').textContent = 'Preparing…';
+  const atts = await dbAll();
+  if (!atts.length) { $('coachStatus').textContent = 'No recordings yet.'; return; }
+  const st = flawStats(atts);
+  const chosen = all ? atts : worstAttempts(atts, 10);
+  const files = [], picked = [];
+  for (const a of chosen) {
+    const f = `audio/attempt-${a.id}-${a.textId}.wav`;
+    try { files.push({ name: f, data: await toWav16k(a.audio) }); picked.push([a, f]); } catch (e) { console.warn('skip', a.id, e); }
+  }
+  const report = reportText(atts, st, picked) + `\n## Instructions for the AI coach\n${COACH_TASK}\nThen explain the drills and how to practise them.\n`;
+  files.unshift({ name: 'report.md', data: report },
+                 { name: 'attempts.json', data: JSON.stringify(atts.map(({ audio, ...rest }) => rest), null, 1) });
+  const stamp = today();
+  await deliver(makeZip(files), all ? `accent-backup-${stamp}.zip` : `accent-coach-pack-${stamp}.zip`);
+  $('coachStatus').textContent = all ? `Backed up ${picked.length} recordings.` : `Coach pack ready: report + ${picked.length} recordings. Upload the zip (or report.md + the WAVs) to any AI.`;
+}
+
+// ======================================================================
+// Gemini coach: sends the report + your weakest recordings, gets back a diagnosis and custom drills
+// ======================================================================
+function b64(u8) { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); }
+
+async function askCoach() {
+  const key = localStorage.getItem('aa-gkey');
+  if (!key) { $('settings').open = true; $('keyStatus').textContent = 'Add your Gemini API key first.'; $('settings').scrollIntoView({ behavior: 'smooth' }); return; }
+  const model = localStorage.getItem('aa-gmodel') || DEFAULT_MODEL;
+  const atts = await dbAll();
+  if (!atts.length) { $('coachStatus').textContent = 'Record a few attempts first.'; return; }
+  $('askCoach').disabled = true; $('coachStatus').textContent = 'Preparing your recordings…';
+  try {
+    const st = flawStats(atts), chosen = worstAttempts(atts, 6), parts = [], picked = [];
+    let seconds = 0;
+    for (const a of chosen) {
+      if (seconds > 120) break;
+      const f = `recording-${picked.length + 1}`;
+      const wav = await toWav16k(a.audio);
+      seconds += (wav.length - 44) / 32000;
+      picked.push([a, f]);
+      parts.push({ text: `${f}:` }, { inline_data: { mime_type: 'audio/wav', data: b64(wav) } });
+    }
+    parts.unshift({ text: reportText(atts, st, picked) + '\n' + COACH_TASK + '\n\n' + COACH_JSON });
+    $('coachStatus').textContent = `Gemini is listening to ${picked.length} recordings…`;
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+      body: JSON.stringify({ contents: [{ role: 'user', parts }], generationConfig: { responseMimeType: 'application/json', temperature: 0.4 } }),
+    });
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.error?.message || res.statusText);
+    const txt = body.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
+    const out = JSON.parse(txt.replace(/^```(json)?|```$/g, '').trim());
+    const drills = (out.drills || []).filter(d => d.text).map((d, i) => {
+      const words = d.text.trim().split(/\s+/);
+      const syl = Array.isArray(d.syl) && d.syl.length === words.length ? d.syl : words.map(w => normWord(w));
+      return { id: `coach-${Date.now()}-${i}`, level: 'coach', text: d.text.trim(), words, syl, timings: words.map(() => null), audio: null, focus: d.focus || '' };
+    });
+    localStorage.setItem('aa-coach', JSON.stringify({ at: new Date().toISOString(), model, diagnosis: out.diagnosis || [], next_focus: out.next_focus || '', drills }));
+    renderCoach();
+    $('coachStatus').textContent = 'Coach feedback ready ↓';
+    $('coachCard').scrollIntoView({ behavior: 'smooth' });
+  } catch (e) {
+    console.error(e);
+    $('coachStatus').textContent = 'Coach failed: ' + e.message;
+  } finally { $('askCoach').disabled = false; }
+}
+
+function renderCoach() {
+  const c = JSON.parse(localStorage.getItem('aa-coach') || 'null');
+  $('coachCard').classList.toggle('hidden', !c);
+  $('coachLevel').classList.toggle('hidden', !(c && c.drills.length));
+  if (!c) return;
+  $('coachWhen').textContent = `From ${c.model}, ${new Date(c.at).toLocaleString()}`;
+  $('diagnosis').innerHTML = c.diagnosis.map(d => `<li><b>${esc(d.flaw)}</b><div class="ev">Heard in: ${esc(d.evidence || '')}</div>Fix: ${esc(d.fix || '')}</li>`).join('');
+  $('nextFocus').textContent = c.next_focus ? 'This week: ' + c.next_focus : '';
+  $('drills').innerHTML = c.drills.map((d, i) => `<div class="drill"><div>${esc(d.text)}<div class="f">${esc(d.focus)}</div></div><button class="small" data-drill="${i}">Practice</button></div>`).join('');
+  $('drills').querySelectorAll('[data-drill]').forEach(b => b.onclick = () => {
+    setLevelButtons('coach'); level = 'coach'; localStorage.setItem('aa-level', 'coach');
+    load(c.drills[+b.dataset.drill]); window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+}
+
+// ======================================================================
+// Wiring
+// ======================================================================
+function setLevelButtons(l) { document.querySelectorAll('#levels [data-level]').forEach(b => b.classList.toggle('on', b.dataset.level === l)); }
 function setLevel(l) {
+  if (l === 'coach' && !coachDrills().length) l = 'sentence';
   level = l; localStorage.setItem('aa-level', l);
-  document.querySelectorAll('#levels [data-level]').forEach(b => b.classList.toggle('on', b.dataset.level === l));
+  setLevelButtons(l);
   pick();
 }
 document.querySelectorAll('#levels [data-level]').forEach(b => b.onclick = () => setLevel(b.dataset.level));
-$('next').onclick = () => { pick(); renderStats(); };
+$('next').onclick = () => pick();
 $('playRef').onclick = playRef; $('rec').onclick = toggleRec;
 $('playMe').onclick = playMe; $('playBoth').onclick = playBoth;
+$('drillFlaws').onclick = () => { setLevel('flaws'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+$('askCoach').onclick = askCoach;
+$('exportPack').onclick = () => buildPack(false);
+$('backupAll').onclick = () => buildPack(true);
+$('gKey').value = localStorage.getItem('aa-gkey') || '';
+$('gModel').value = localStorage.getItem('aa-gmodel') || DEFAULT_MODEL;
+$('saveKey').onclick = () => {
+  localStorage.setItem('aa-gkey', $('gKey').value.trim());
+  localStorage.setItem('aa-gmodel', $('gModel').value.trim() || DEFAULT_MODEL);
+  $('keyStatus').textContent = 'Saved on this device.';
+};
 document.addEventListener('keydown', e => {
-  if (e.target.tagName === 'SELECT') return;
+  if (['SELECT', 'INPUT'].includes(e.target.tagName)) return;
   if (e.code === 'Space') { e.preventDefault(); toggleRec(); }
   if (e.key === 'p' || e.key === 'P') playRef();
 });
 document.addEventListener('pointerdown', () => actx && actx.state === 'suspended' && actx.resume(), { once: true });
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
-setLevel(level); renderStats();
+setLevel(level); renderStats(); renderFlaws(); renderCoach();
 </script>
 </body>
 </html>
