@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>American Accent Shadowing</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="theme-color" content="#0f172a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Accent">
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --line:#334155; --text:#e2e8f0; --muted:#94a3b8;
+          --ref:#38bdf8; --you:#fb923c; --stress:#fbbf24; --good:#4ade80; --mid:#facc15; --bad:#f87171; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: -apple-system, system-ui, sans-serif; background:var(--bg); color:var(--text); }
+  main { max-width: 1000px; margin: 0 auto; padding: 24px 20px 60px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: var(--muted); font-size: 14px; margin-bottom: 18px; }
+  .bar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:16px; }
+  button { background: var(--card); color: var(--text); border:1px solid var(--line); border-radius:10px;
+           padding:10px 16px; font-size:15px; cursor:pointer; }
+  button:hover:not(:disabled) { border-color: var(--muted); }
+  button:disabled { opacity:.4; cursor:default; }
+  button.on { background:#334155; border-color:var(--ref); }
+  button.primary { background:#0369a1; border-color:#0369a1; }
+  button.rec { background:#b91c1c; border-color:#b91c1c; }
+  button.rec.live { animation: pulse 1s infinite; }
+  @keyframes pulse { 50% { opacity:.6; } }
+  select { background:var(--card); color:var(--text); border:1px solid var(--line); border-radius:10px; padding:9px; font-size:14px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px; margin-bottom:16px; }
+  .words { display:flex; flex-wrap:wrap; gap:14px 18px; align-items:flex-start; }
+  .w { display:flex; flex-direction:column; align-items:center; padding:6px 8px; border-radius:8px; transition: background .1s; }
+  .w .txt { font-size: 22px; font-weight: 500; }
+  .w .syl { margin-top: 6px; font-family: ui-monospace, Menlo, monospace; font-size: 14px; color: var(--muted); }
+  .w .syl b { color: var(--stress); font-size: 17px; }
+  .w .syl i { font-style: normal; opacity:.5; }
+  .w.now { background:#0c4a6e; }
+  .legend { color:var(--muted); font-size:13px; margin-top:14px; }
+  .legend b { color: var(--stress); }
+  .scores { display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-bottom:14px; }
+  .score { background:#0f172a; border-radius:12px; padding:14px; text-align:center; }
+  .score .n { font-size: 34px; font-weight: 700; }
+  .score .l { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .tips { line-height:1.6; font-size:15px; margin: 6px 0 12px; padding-left: 20px; }
+  canvas { width:100%; height:300px; display:block; }
+  .key { font-size:13px; color:var(--muted); margin-top:6px; }
+  .key span { display:inline-block; width:14px; height:3px; vertical-align:middle; margin:0 4px 0 12px; }
+  .stats { display:flex; gap:24px; color:var(--muted); font-size:14px; flex-wrap:wrap; }
+  .stats b { color:var(--text); font-size:18px; }
+  .hidden { display:none; }
+  .hint { color:var(--muted); font-size:13px; }
+  kbd { background:#334155; border-radius:4px; padding:1px 6px; font-size:12px; }
+  main { padding-top: max(24px, env(safe-area-inset-top)); padding-bottom: max(60px, env(safe-area-inset-bottom)); }
+  button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  @media (hover: none) { kbd { display:none; } }
+  @media (max-width: 640px) {
+    main { padding-left: 14px; padding-right: 14px; }
+    h1 { font-size: 19px; }
+    .card { padding: 14px; }
+    .words { gap: 10px 10px; }
+    .w { padding: 4px 4px; }
+    .w .txt { font-size: 18px; }
+    .w .syl { font-size: 12px; } .w .syl b { font-size: 14px; }
+    .scores { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .score .n { font-size: 28px; }
+    canvas { height: 240px; }
+    .bar button { padding: 10px 12px; font-size: 14px; }
+    #playRef, #rec { flex: 1 1 40%; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>American Accent Shadowing</h1>
+  <div class="sub">Listen &rarr; read the syllables &rarr; record yourself &rarr; compare your rhythm and melody with the American voice.</div>
+
+  <div class="bar" id="levels">
+    <button data-level="word">Word</button>
+    <button data-level="phrase">Phrase</button>
+    <button data-level="sentence">Sentence</button>
+    <button data-level="paragraph">Paragraph</button>
+    <button data-level="any">Any</button>
+    <button id="next" class="primary">New random &#x21bb;</button>
+  </div>
+
+  <div class="card">
+    <div class="words" id="words"></div>
+    <div class="legend"><b>BIG GOLD CAPS</b> = hit it hard, loud and long. <i style="opacity:.6">small grey</i> = say it fast and lazy ("uh"). Spelling shows the American sound (t &rarr; d in "WAH-der").</div>
+  </div>
+
+  <div class="bar">
+    <button id="playRef" class="primary">&#9654; Play American <kbd>P</kbd></button>
+    <select id="speed" title="Playback speed">
+      <option value="1">1.0&times; speed</option>
+      <option value="0.85">0.85&times;</option>
+      <option value="0.7">0.7&times;</option>
+    </select>
+    <button id="rec" class="rec">&#9679; Record me <kbd>Space</kbd></button>
+    <button id="playMe" disabled>&#9654; Play mine</button>
+    <button id="playBoth" disabled>&#9654; American then me</button>
+    <span class="hint" id="status"></span>
+  </div>
+
+  <div class="card hidden" id="result">
+    <div class="scores">
+      <div class="score"><div class="n" id="sOverall">–</div><div class="l">Overall</div></div>
+      <div class="score"><div class="n" id="sRhythm">–</div><div class="l">Rhythm (stress beats)</div></div>
+      <div class="score"><div class="n" id="sMelody">–</div><div class="l">Melody (up &amp; down)</div></div>
+      <div class="score"><div class="n" id="sPace">–</div><div class="l">Pace</div></div>
+    </div>
+    <ul class="tips" id="tips"></ul>
+    <canvas id="chart"></canvas>
+    <div class="key"><span style="background:var(--ref)"></span>American <span style="background:var(--you)"></span>You &nbsp;·&nbsp; Top: loudness (each hump = a stressed beat). Bottom: voice pitch (melody). Both stretched to the same length so you can compare shapes.</div>
+  </div>
+
+  <div class="card">
+    <div class="stats" id="stats"></div>
+  </div>
+</main>
+
+<script src="data.js"></script>
+<script>
+// ---------- state ----------
+const $ = id => document.getElementById(id);
+let level = localStorage.getItem('aa-level') || 'sentence';
+let item = null, refBuf = null, refAnalysis = null, myBlob = null, myUrl = null;
+let refAudio = new Audio(), myAudio = new Audio();
+let recorder = null, chunks = [], stream = null;
+let actx = null;
+const ctx = () => (actx ||= new AudioContext());
+
+// ---------- picking text ----------
+function pick() {
+  const pool = BANK.filter(b => level === 'any' || b.level === level);
+  let next;
+  do { next = pool[Math.floor(Math.random() * pool.length)]; } while (pool.length > 1 && item && next.id === item.id);
+  load(next);
+}
+
+async function load(it) {
+  item = it; refAnalysis = null; myBlob = null;
+  $('result').classList.add('hidden');
+  $('playMe').disabled = $('playBoth').disabled = true;
+  $('status').textContent = '';
+  renderWords();
+  refAudio.src = it.audio;
+  const buf = await (await fetch(it.audio)).arrayBuffer();
+  refBuf = await ctx().decodeAudioData(buf);
+  refAnalysis = analyze(refBuf);
+}
+
+function renderWords() {
+  $('words').innerHTML = item.words.map((w, i) => {
+    const syl = item.syl[i].split('-').map(s =>
+      /[a-z]/.test(s) ? `<i>${s}</i>` : `<b>${s}</b>`).join('<span style="opacity:.4">·</span>');
+    return `<div class="w" id="w${i}"><div class="txt">${w}</div><div class="syl">${syl}</div></div>`;
+  }).join('');
+}
+
+// karaoke highlight while the American voice plays
+function tick() {
+  const t = refAudio.currentTime;
+  item && item.timings.forEach((tm, i) => {
+    const el = $('w' + i);
+    if (el) el.classList.toggle('now', !refAudio.paused && tm && t >= tm[0] && t <= tm[1] + 0.05);
+  });
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+
+// ---------- playback ----------
+function playRef() {
+  myAudio.pause();
+  refAudio.playbackRate = parseFloat($('speed').value);
+  refAudio.currentTime = 0; refAudio.play();
+}
+function playMe() { refAudio.pause(); if (myUrl) { myAudio.src = myUrl; myAudio.play(); } }
+function playBoth() {
+  // iPhone only lets audio start from a tap: "unlock" my clip now so it can auto-play after the American one.
+  if (myUrl) { myAudio.src = myUrl; myAudio.play().then(() => myAudio.pause()).catch(() => {}); }
+  refAudio.playbackRate = 1; refAudio.currentTime = 0; refAudio.play();
+  refAudio.onended = () => { refAudio.onended = null; setTimeout(playMe, 400); };
+}
+
+// ---------- recording ----------
+async function toggleRec() {
+  if (recorder && recorder.state === 'recording') { recorder.stop(); return; }
+  refAudio.pause(); myAudio.pause();
+  try {
+    stream ||= await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: false, noiseSuppression: true, autoGainControl: false } });
+  } catch (e) { $('status').textContent = 'Microphone blocked — allow it in the browser address bar.'; return; }
+  chunks = [];
+  recorder = new MediaRecorder(stream);
+  recorder.ondataavailable = e => chunks.push(e.data);
+  recorder.onstop = onRecorded;
+  recorder.start();
+  $('rec').classList.add('live'); $('rec').innerHTML = '&#9632; Stop <kbd>Space</kbd>';
+  $('status').textContent = 'Recording… speak now';
+}
+
+async function onRecorded() {
+  $('rec').classList.remove('live'); $('rec').innerHTML = '&#9679; Record me <kbd>Space</kbd>';
+  myBlob = new Blob(chunks, { type: recorder.mimeType });
+  if (myUrl) URL.revokeObjectURL(myUrl);
+  myUrl = URL.createObjectURL(myBlob);
+  $('playMe').disabled = $('playBoth').disabled = false;
+  $('status').textContent = 'Scoring…';
+  try {
+    const buf = await ctx().decodeAudioData(await myBlob.arrayBuffer());
+    const mine = analyze(buf);
+    if (!mine) { $('status').textContent = "Couldn't hear you — try again a bit louder."; return; }
+    showResult(compare(refAnalysis, mine));
+    $('status').textContent = '';
+  } catch (e) { console.error(e); $('status').textContent = 'Could not analyse that recording.'; }
+}
+
+// ---------- signal analysis ----------
+// Turns audio into two curves: loudness (dB) and pitch (Hz) every 10 ms.
+function analyze(audioBuf) {
+  const raw = audioBuf.getChannelData(0), sr0 = audioBuf.sampleRate;
+  const f = Math.max(1, Math.round(sr0 / 12000)), sr = sr0 / f;      // downsample ~12 kHz
+  const x = new Float32Array(Math.floor(raw.length / f));
+  for (let i = 0; i < x.length; i++) { let s = 0; for (let k = 0; k < f; k++) s += raw[i * f + k]; x[i] = s / f; }
+  const hop = Math.round(sr * 0.01), win = Math.round(sr * 0.04);
+  const db = [], pitch = [];
+  for (let st = 0; st + win <= x.length; st += hop) {
+    let e = 0; for (let i = 0; i < win; i++) e += x[st + i] ** 2;
+    db.push(10 * Math.log10(e / win + 1e-12));
+  }
+  if (db.length < 10) return null;
+  const sorted = [...db].sort((a, b) => a - b);
+  const top = sorted[Math.floor(sorted.length * 0.98)];
+  const floor = sorted[Math.floor(sorted.length * 0.1)];
+  if (top - floor < 12) return null;                                   // basically silence
+  const minLag = Math.floor(sr / 400), maxLag = Math.ceil(sr / 70);
+  for (let fi = 0; fi < db.length; fi++) {
+    if (db[fi] < top - 30) { pitch.push(0); continue; }
+    const st = fi * hop, n = win - maxLag;
+    let best = 0, bestLag = 0;
+    if (n < 50) { pitch.push(0); continue; }
+    let e0 = 0; for (let i = 0; i < n; i++) e0 += x[st + i] ** 2;
+    for (let lag = minLag; lag <= maxLag; lag++) {
+      let c = 0, e1 = 0;
+      for (let i = 0; i < n; i++) { c += x[st + i] * x[st + i + lag]; e1 += x[st + i + lag] ** 2; }
+      const r = c / Math.sqrt(e0 * e1 + 1e-12);
+      if (r > best) { best = r; bestLag = lag; }
+    }
+    pitch.push(best > 0.6 ? sr / bestLag : 0);
+  }
+  // trim leading/trailing silence
+  const active = db.map(d => d > top - 35);
+  let a = active.indexOf(true), b = active.lastIndexOf(true);
+  a = Math.max(0, a - 3); b = Math.min(db.length - 1, b + 3);
+  const D = db.slice(a, b + 1), P = pitch.slice(a, b + 1);
+  // loudness 0..1 (40 dB range), lightly smoothed
+  const env = smooth(D.map(d => Math.min(1, Math.max(0, (d - (top - 40)) / 40))), 3);
+  // pitch in semitones relative to the speaker's own median (so male/female voices compare fairly)
+  const voiced = P.filter(p => p > 0).sort((p, q) => p - q);
+  const med = voiced[Math.floor(voiced.length / 2)] || 1;
+  let semi = medianFilter(P.map(p => p > 0 ? 12 * Math.log2(p / med) : NaN), 5);
+  semi = semi.map(v => Math.abs(v) > 12 ? NaN : v);                  // drop octave jumps
+  return { env, semi, dur: D.length * 0.01, voicedFrac: voiced.length / P.length };
+}
+
+function smooth(a, r) { return a.map((_, i) => { let s = 0, n = 0; for (let k = i - r; k <= i + r; k++) if (k >= 0 && k < a.length) { s += a[k]; n++; } return s / n; }); }
+function medianFilter(a, w) { const h = w >> 1; return a.map((v, i) => { if (isNaN(v)) return v; const s = a.slice(Math.max(0, i - h), i + h + 1).filter(x => !isNaN(x)).sort((p, q) => p - q); return s[s.length >> 1]; }); }
+function resample(a, n) { return Array.from({ length: n }, (_, i) => { const t = i * (a.length - 1) / (n - 1), lo = Math.floor(t), hi = Math.min(a.length - 1, lo + 1), f = t - lo; const A = a[lo], B = a[hi]; if (isNaN(A)) return B; if (isNaN(B)) return A; return A * (1 - f) + B * f; }); }
+function corr(a, b) { const n = a.length; if (n < 8) return NaN; const ma = a.reduce((s, v) => s + v, 0) / n, mb = b.reduce((s, v) => s + v, 0) / n; let c = 0, va = 0, vb = 0; for (let i = 0; i < n; i++) { c += (a[i] - ma) * (b[i] - mb); va += (a[i] - ma) ** 2; vb += (b[i] - mb) ** 2; } return c / Math.sqrt(va * vb + 1e-12); }
+function std(a) { const m = a.reduce((s, v) => s + v, 0) / a.length; return Math.sqrt(a.reduce((s, v) => s + (v - m) ** 2, 0) / a.length); }
+const clamp = v => Math.max(0, Math.min(100, Math.round(v)));
+
+// ---------- scoring ----------
+function compare(ref, me) {
+  const N = Math.max(40, Math.min(400, Math.round(ref.dur * 25)));
+  const rE = resample(ref.env, N), mE = resample(me.env, N);
+  // Rhythm: do your loud beats land in the same places as the American's?
+  const rC = corr(smooth(rE, 1), smooth(mE, 1));
+  const rhythm = clamp((rC - 0.15) / 0.65 * 100);
+  // Melody: does your pitch rise and fall in the same places?
+  const rS = resample(ref.semi, N), mS = resample(me.semi, N);
+  const idx = rS.map((v, i) => i).filter(i => !isNaN(rS[i]) && !isNaN(mS[i]));
+  const mC = corr(idx.map(i => rS[i]), idx.map(i => mS[i]));
+  const melody = idx.length < 10 || isNaN(mC) ? null : clamp(mC / 0.75 * 100);
+  // Pace: total time compared with the American (speed setting ignored — compared at 1.0x)
+  const ratio = me.dur / ref.dur;
+  const pace = clamp(100 * Math.exp(-Math.abs(Math.log(ratio)) * 1.8));
+  // Stress contrast: how big the gap between loud and soft syllables is
+  const contrast = std(me.env.filter(v => v > 0.05)) / (std(ref.env.filter(v => v > 0.05)) || 1);
+  const overall = clamp(melody == null ? rhythm * 0.7 + pace * 0.3 : rhythm * 0.45 + melody * 0.35 + pace * 0.2);
+  return { overall, rhythm, melody, pace, ratio, contrast, rE, mE, rS, mS };
+}
+
+function color(v) { return v == null ? 'var(--muted)' : v >= 75 ? 'var(--good)' : v >= 50 ? 'var(--mid)' : 'var(--bad)'; }
+
+function showResult(r) {
+  $('result').classList.remove('hidden');
+  [['sOverall', r.overall], ['sRhythm', r.rhythm], ['sMelody', r.melody], ['sPace', r.pace]].forEach(([id, v]) => {
+    $(id).textContent = v == null ? '–' : v; $(id).style.color = color(v);
+  });
+  const tips = [];
+  if (r.contrast < 0.8) tips.push(`Your loud and soft syllables are too even (${Math.round(r.contrast * 100)}% of the American contrast). Punch the <b style="color:var(--stress)">GOLD</b> syllables harder and squash the grey ones.`);
+  else if (r.contrast > 1.4) tips.push('You are over-punching — keep the stressed syllables strong but let the weak ones flow, don\'t chop.');
+  if (r.rhythm < 60) tips.push('Your stress beats land in different places. Play at 0.7× and tap the table on each gold syllable, then say it again.');
+  if (r.melody != null && r.melody < 55) tips.push('Your voice melody differs. Americans usually rise on the main stressed word, then fall at the end of a statement. Hum the sentence first, then add the words.');
+  if (r.ratio > 1.2) tips.push(`You were ${Math.round((r.ratio - 1) * 100)}% slower. Link words together ("geh-dit" not "get / it").`);
+  else if (r.ratio < 0.83) tips.push(`You were ${Math.round((1 - r.ratio) * 100)}% faster — slow down a little and let stressed syllables be long.`);
+  if (!tips.length) tips.push('Great match! Try a longer level or switch to "Any".');
+  $('tips').innerHTML = tips.map(t => `<li>${t}</li>`).join('');
+  draw(r);
+  saveHistory(r);
+}
+
+function draw(r) {
+  const c = $('chart'), dpr = devicePixelRatio || 1;
+  c.width = c.clientWidth * dpr; c.height = c.clientHeight * dpr;
+  const g = c.getContext('2d'); g.scale(dpr, dpr);
+  const W = c.clientWidth, H = c.clientHeight, half = H / 2 - 8;
+  g.clearRect(0, 0, W, H);
+  g.fillStyle = '#94a3b8'; g.font = '12px system-ui';
+  g.fillText('Loudness / stress beats', 4, 12); g.fillText('Pitch / melody', 4, half + 28);
+  g.strokeStyle = '#334155'; g.beginPath(); g.moveTo(0, half + 12); g.lineTo(W, half + 12); g.stroke();
+  const line = (arr, col, y0, h, lo, hi) => {
+    g.strokeStyle = col; g.lineWidth = 2; g.beginPath(); let pen = false;
+    arr.forEach((v, i) => {
+      const x = i / (arr.length - 1) * W;
+      if (isNaN(v)) { pen = false; return; }
+      const y = y0 + h - (v - lo) / (hi - lo) * h;
+      pen ? g.lineTo(x, y) : g.moveTo(x, y); pen = true;
+    });
+    g.stroke();
+  };
+  line(r.rE, '#38bdf8', 18, half - 14, 0, 1); line(r.mE, '#fb923c', 18, half - 14, 0, 1);
+  const all = [...r.rS, ...r.mS].filter(v => !isNaN(v));
+  const lo = Math.min(-4, ...all), hi = Math.max(4, ...all);
+  line(r.rS, '#38bdf8', half + 34, half - 30, lo, hi); line(r.mS, '#fb923c', half + 34, half - 30, lo, hi);
+}
+
+// ---------- daily history ----------
+function today() { return new Date().toLocaleDateString('en-CA'); }
+function saveHistory(r) {
+  const h = JSON.parse(localStorage.getItem('aa-history') || '[]');
+  h.push({ d: today(), id: item.id, level: item.level, o: r.overall });
+  localStorage.setItem('aa-history', JSON.stringify(h.slice(-2000)));
+  renderStats();
+}
+function renderStats() {
+  const h = JSON.parse(localStorage.getItem('aa-history') || '[]');
+  const days = new Set(h.map(x => x.d));
+  let streak = 0; const d = new Date();
+  if (!days.has(today())) d.setDate(d.getDate() - 1);
+  while (days.has(d.toLocaleDateString('en-CA'))) { streak++; d.setDate(d.getDate() - 1); }
+  const t = h.filter(x => x.d === today());
+  const last10 = h.slice(-10), avg = last10.length ? Math.round(last10.reduce((s, x) => s + x.o, 0) / last10.length) : '–';
+  const best = item ? Math.max(...h.filter(x => x.id === item.id).map(x => x.o), -1) : -1;
+  $('stats').innerHTML = `
+    <div>Today<br><b>${t.length}</b> tries</div>
+    <div>Streak<br><b>${streak}</b> day${streak === 1 ? '' : 's'}</div>
+    <div>Avg of last 10<br><b>${avg}</b></div>
+    <div>Your best on this text<br><b>${best < 0 ? '–' : best}</b></div>
+    <div>Total tries<br><b>${h.length}</b></div>`;
+}
+
+// ---------- wiring ----------
+function setLevel(l) {
+  level = l; localStorage.setItem('aa-level', l);
+  document.querySelectorAll('#levels [data-level]').forEach(b => b.classList.toggle('on', b.dataset.level === l));
+  pick();
+}
+document.querySelectorAll('#levels [data-level]').forEach(b => b.onclick = () => setLevel(b.dataset.level));
+$('next').onclick = () => { pick(); renderStats(); };
+$('playRef').onclick = playRef; $('rec').onclick = toggleRec;
+$('playMe').onclick = playMe; $('playBoth').onclick = playBoth;
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'SELECT') return;
+  if (e.code === 'Space') { e.preventDefault(); toggleRec(); }
+  if (e.key === 'p' || e.key === 'P') playRef();
+});
+document.addEventListener('pointerdown', () => actx && actx.state === 'suspended' && actx.resume(), { once: true });
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+setLevel(level); renderStats();
+</script>
+</body>
+</html>
