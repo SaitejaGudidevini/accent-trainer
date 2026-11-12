@@ -1,8 +1,8 @@
 // Offline support.
 // - App files (page, text bank): network first, so new texts show up; fall back to cache offline.
 // - Audio files: cache first. Their names are MD5 fingerprints of the text, so they never go stale.
-const CACHE = 'accent-v2';
-const SHELL = ['./', 'index.html', 'data.js', 'manifest.json', 'icons/icon-192.png', 'icons/icon-512.png'];
+const CACHE = 'accent-v4';
+const SHELL = ['./', 'index.html', 'data.js', 'learn.js', 'manifest.json', 'icons/icon-192.png', 'icons/icon-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -22,9 +22,10 @@ self.addEventListener('fetch', e => {
       return res;
     })));
   } else {
-    e.respondWith(fetch(e.request).then(res => {
+    // cache: 'no-cache' = always ask the server if the file changed, so page, lessons and code never mismatch
+    e.respondWith(fetch(e.request, { cache: 'no-cache' }).then(res => {
       if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); }
       return res;
-    }).catch(() => caches.match(e.request).then(hit => hit || caches.match('index.html'))));
+    }).catch(() => caches.match(e.request, { ignoreSearch: true }).then(hit => hit || caches.match('index.html'))));
   }
 });

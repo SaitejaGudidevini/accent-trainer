@@ -1,0 +1,202 @@
+[
+  {
+    "id": "u1", "title": "Strong & weak syllables", "emoji": "🥁",
+    "why": "American English is stress-timed: in every word ONE syllable is long, loud and a little higher, and the others shrink to a quick, lazy \"uh\". Indian English gives every syllable about the same length — studies measuring Indian vs American speech found much smaller differences between stressed and unstressed syllables. This is the #1 thing that makes an accent sound Indian, and fixing it helps people understand you the most.",
+    "how": ["Find the gold syllable. Make it LONGER, LOUDER and a bit HIGHER.", "Squash every other vowel into a short, lazy \"uh\" — mouth relaxed, barely open.", "Tap the table on the gold syllable while you say the word."],
+    "quiz": "stress",
+    "words": [
+      {"text": "banana", "syl": ["buh-NAN-uh"]},
+      {"text": "computer", "syl": ["kum-PYOO-der"]},
+      {"text": "important", "syl": ["im-POR-tnt"]},
+      {"text": "photograph", "syl": ["FOH-duh-graf"]},
+      {"text": "photography", "syl": ["fuh-TAH-gruh-fee"]},
+      {"text": "develop", "syl": ["dih-VEL-up"]},
+      {"text": "available", "syl": ["uh-VAY-luh-bul"]},
+      {"text": "comfortable", "syl": ["KUMF-ter-bul"]},
+      {"text": "company", "syl": ["KUM-puh-nee"]},
+      {"text": "analysis", "syl": ["uh-NAL-uh-sis"]}
+    ],
+    "sentences": [
+      {"text": "I'm developing a comfortable photography app.", "syl": ["aim", "dih-VEL-uh-ping", "uh", "KUMF-ter-bul", "fuh-TAH-gruh-fee", "AP"]},
+      {"text": "The analysis is available to the whole company.", "syl": ["thee", "uh-NAL-uh-sis", "iz", "uh-VAY-luh-bul", "tuh", "thuh", "HOHL", "KUM-puh-nee"]}
+    ]
+  },
+  {
+    "id": "u2", "title": "Small words: say them weak", "emoji": "🤏",
+    "why": "Americans almost swallow little grammar words — a, the, to, of, and, for, can, you become \"uh, thuh, tuh, uv, n, fer, kn, yuh\". Indian English often says them in full (\"ae\", \"tu\", \"aand\"), which breaks the rhythm. Saying them weak is what makes the important words stand out.",
+    "how": ["Never stress them: say them low, quick and quiet.", "Turn the vowel into \"uh\": to → tuh, of → uv, for → fer, and → n.", "Glue them to the next word: \"cup of tea\" → KUP-uh-TEE."],
+    "quiz": "accent", "vs": "in",
+    "words": [
+      {"text": "a cup of tea", "syl": ["uh", "KUP", "uh", "TEE"]},
+      {"text": "bread and butter", "syl": ["BRED", "n", "BUH-der"]},
+      {"text": "I have to go", "syl": ["eye", "HAF", "tuh", "GOH"]},
+      {"text": "fish and chips", "syl": ["FISH", "n", "CHIPS"]},
+      {"text": "for a while", "syl": ["fer", "uh", "WHYL"]},
+      {"text": "I can do it", "syl": ["eye", "kn", "DOO", "it"]},
+      {"text": "What do you think?", "syl": ["wuh", "duh", "yuh", "THINK"]},
+      {"text": "a lot of people", "syl": ["uh", "LAH", "duh", "PEE-pul"]},
+      {"text": "some of them", "syl": ["SUM", "uv", "um"]},
+      {"text": "Where are you from?", "syl": ["WEHR", "er", "yuh", "FRUM"]}
+    ],
+    "sentences": [
+      {"text": "I have to go to the bank for a minute.", "syl": ["eye", "HAF", "tuh", "GOH", "tuh", "thuh", "BANK", "fer", "uh", "MIN-it"]},
+      {"text": "Can you get me a cup of coffee?", "syl": ["kn", "yuh", "GEH", "mee", "uh", "KUP", "uh", "KAW-fee"]}
+    ]
+  },
+  {
+    "id": "u3", "title": "Flap T (water → WAH-der)", "emoji": "💧",
+    "why": "When T sits between two vowel sounds and the next syllable is weak, Americans turn it into a quick, soft tap that sounds like a light D: water → WAH-der, better → BEH-der. British and Indian English keep a hard T. This one change makes you sound American almost instantly.",
+    "how": ["Tongue tip taps the bumpy ridge behind your top teeth ONCE, very fast — like a light D.", "No puff of air like a real T.", "It works across words too: \"get it\" → geh-dit, \"a lot of\" → uh-LAH-duh."],
+    "quiz": "accent", "vs": "gb",
+    "words": [
+      {"text": "water", "syl": ["WAH-der"]},
+      {"text": "better", "syl": ["BEH-der"]},
+      {"text": "city", "syl": ["SIH-dee"]},
+      {"text": "party", "syl": ["PAR-dee"]},
+      {"text": "little", "syl": ["LIH-dl"]},
+      {"text": "matter", "syl": ["MA-der"]},
+      {"text": "computer", "syl": ["kum-PYOO-der"]},
+      {"text": "beautiful", "syl": ["BYOO-duh-ful"]},
+      {"text": "total", "syl": ["TOH-dl"]},
+      {"text": "getting", "syl": ["GEH-ding"]}
+    ],
+    "sentences": [
+      {"text": "A little bit of water is better.", "syl": ["uh", "LIH-dl", "BIH", "duv", "WAH-der", "iz", "BEH-der"]},
+      {"text": "Get it out of the city.", "syl": ["GEH", "dih", "DOW", "duv", "thuh", "SIH-dee"]}
+    ]
+  },
+  {
+    "id": "u4", "title": "V vs W", "emoji": "🦷",
+    "why": "English has two different sounds here: V (top teeth on bottom lip, buzzing) and W (round lips, no teeth). Many Indian languages have one sound in between, so \"vest\" and \"west\" can sound the same. Research shows this is one of the hardest pairs for Hindi speakers to hear AND say — and mixing them can change the word.",
+    "how": ["V: top teeth gently touch your bottom lip, then buzz: vvvv.", "W: no teeth at all. Round your lips like \"oo\", then open: oo-est = west.", "Check in a mirror: V shows teeth, W shows a round mouth."],
+    "quiz": "pair",
+    "pairs": [["vest", "west"], ["vine", "wine"], ["vet", "wet"], ["veil", "whale"], ["vent", "went"], ["verse", "worse"], ["viper", "wiper"], ["vow", "wow"]],
+    "words": [
+      {"text": "very", "syl": ["VEH-ree"]},
+      {"text": "west", "syl": ["WEST"]},
+      {"text": "video", "syl": ["VIH-dee-oh"]},
+      {"text": "wine", "syl": ["WYN"]},
+      {"text": "voice", "syl": ["VOYS"]},
+      {"text": "would", "syl": ["WUD"]},
+      {"text": "travel", "syl": ["TRA-vul"]},
+      {"text": "award", "syl": ["uh-WORD"]},
+      {"text": "vowel", "syl": ["VOW-ul"]},
+      {"text": "wavy", "syl": ["WAY-vee"]}
+    ],
+    "sentences": [
+      {"text": "We have a very good view of the west.", "syl": ["wee", "hav", "uh", "VEH-ree", "GUD", "VYOO", "uv", "thuh", "WEST"]},
+      {"text": "Would you like white wine or vodka?", "syl": ["wud", "juh", "LIKE", "WHYT", "WYN", "er", "VAHD-kuh"]}
+    ]
+  },
+  {
+    "id": "u5", "title": "American R", "emoji": "🐯",
+    "why": "Americans pronounce every R — car, water, first, more. British English drops R after vowels (\"caah\"), and Indian English often taps or rolls it with the tongue touching the roof of the mouth. The American R is a smooth, growly sound where the tongue touches nothing.",
+    "how": ["Pull your tongue back and bunch it up; the tip touches nothing.", "Round your lips slightly.", "Hold it: \"errrr\". Car = kah + rrr, not \"kaa\"."],
+    "quiz": "accent", "vs": "gb",
+    "words": [
+      {"text": "car", "syl": ["KAR"]},
+      {"text": "water", "syl": ["WAH-der"]},
+      {"text": "first", "syl": ["FERST"]},
+      {"text": "hard", "syl": ["HARD"]},
+      {"text": "more", "syl": ["MOR"]},
+      {"text": "girl", "syl": ["GERL"]},
+      {"text": "world", "syl": ["WERLD"]},
+      {"text": "never", "syl": ["NEV-er"]},
+      {"text": "work", "syl": ["WERK"]},
+      {"text": "morning", "syl": ["MOR-ning"]}
+    ],
+    "sentences": [
+      {"text": "I start work early every morning.", "syl": ["eye", "START", "WERK", "ER-lee", "EV-ree", "MOR-ning"]},
+      {"text": "Her car is parked near the store.", "syl": ["her", "KAR", "iz", "PARKT", "NEER", "thuh", "STOR"]}
+    ]
+  },
+  {
+    "id": "u6", "title": "American vowels", "emoji": "👄",
+    "why": "Three vowel changes do most of the work. (1) \"Bath\" words use the \"cat\" vowel: can't, dance, ask — not the British \"aah\". (2) \"Hot\" words use a wide-open \"ah\": hot → haht, job → jahb. (3) \"Go\" slides into a \"w\" at the end: go → goh-w, not a flat \"goh\".",
+    "how": ["Cat vowel: open wide, spread your lips, tongue low and forward: can't = KANT.", "Hot vowel: drop your jaw like at the doctor — \"aah\": haht, stahp.", "Go vowel: start at \"oh\", then round your lips into \"w\": goh-w, noh-w."],
+    "quiz": "accent", "vs": "gb",
+    "words": [
+      {"text": "can't", "syl": ["KANT"]},
+      {"text": "dance", "syl": ["DANS"]},
+      {"text": "ask", "syl": ["ASK"]},
+      {"text": "after", "syl": ["AF-ter"]},
+      {"text": "hot", "syl": ["HAHT"]},
+      {"text": "stop", "syl": ["STAHP"]},
+      {"text": "job", "syl": ["JAHB"]},
+      {"text": "go", "syl": ["GOH"]},
+      {"text": "know", "syl": ["NOH"]},
+      {"text": "home", "syl": ["HOHM"]}
+    ],
+    "sentences": [
+      {"text": "I can't ask him after the dance.", "syl": ["eye", "KANT", "ASK", "im", "AF-ter", "thuh", "DANS"]},
+      {"text": "Stop the job and go home.", "syl": ["STAHP", "thuh", "JAHB", "n", "GOH", "HOHM"]}
+    ]
+  },
+  {
+    "id": "u7", "title": "Clean T & D (not curled back)", "emoji": "👅",
+    "why": "In Indian English, T and D are often made with the tongue curled back (retroflex), which gives a heavy, thick T. American T and D are made with the tongue tip on the gum ridge just behind the top teeth — lighter and crisper. At the start of a word, American T also has a little puff of air.",
+    "how": ["Tongue tip on the ridge right behind your top teeth — don't curl it back.", "For T at the start of a word, let out a puff: hold paper in front of your mouth — it should move on \"time\".", "D: same place, but with voice and no puff."],
+    "quiz": "accent", "vs": "in",
+    "words": [
+      {"text": "time", "syl": ["TYM"]},
+      {"text": "today", "syl": ["tuh-DAY"]},
+      {"text": "doctor", "syl": ["DAHK-ter"]},
+      {"text": "tea", "syl": ["TEE"]},
+      {"text": "dinner", "syl": ["DIN-er"]},
+      {"text": "ten", "syl": ["TEN"]},
+      {"text": "study", "syl": ["STUH-dee"]},
+      {"text": "top", "syl": ["TAHP"]},
+      {"text": "dollar", "syl": ["DAH-ler"]},
+      {"text": "tomorrow", "syl": ["tuh-MAH-roh"]}
+    ],
+    "sentences": [
+      {"text": "The doctor will see you at ten tomorrow.", "syl": ["thuh", "DAHK-ter", "wl", "SEE", "yuh", "at", "TEN", "tuh-MAH-roh"]},
+      {"text": "Let's have tea and dinner today.", "syl": ["LETS", "hav", "TEE", "n", "DIN-er", "tuh-DAY"]}
+    ]
+  },
+  {
+    "id": "u8", "title": "TH sounds", "emoji": "🐍",
+    "why": "English TH has two sounds: a soft one in \"think\" (no voice) and a buzzing one in \"this\" (with voice). Indian English often swaps them for T and D (\"tink\", \"dis\"). Research ranks TH lower for being understood than the earlier units — but it is very noticeable as an accent.",
+    "how": ["Put the tip of your tongue lightly between your teeth.", "Blow air out over it: thhhh = think. Add your voice for this, the, they.", "Don't stop the air like a T — TH is a long, soft sound."],
+    "quiz": "pair",
+    "pairs": [["thin", "tin"], ["three", "tree"], ["thank", "tank"], ["thought", "taught"], ["then", "den"], ["they", "day"], ["those", "doze"], ["bath", "bat"]],
+    "words": [
+      {"text": "think", "syl": ["THINK"]},
+      {"text": "three", "syl": ["THREE"]},
+      {"text": "thanks", "syl": ["THANKS"]},
+      {"text": "birthday", "syl": ["BERTH-day"]},
+      {"text": "method", "syl": ["METH-ud"]},
+      {"text": "this", "syl": ["THIS"]},
+      {"text": "they", "syl": ["THAY"]},
+      {"text": "mother", "syl": ["MUH-ther"]},
+      {"text": "together", "syl": ["tuh-GEH-ther"]},
+      {"text": "although", "syl": ["awl-THOH"]}
+    ],
+    "sentences": [
+      {"text": "I think those three are together.", "syl": ["eye", "THINK", "THOHZ", "THREE", "er", "tuh-GEH-ther"]},
+      {"text": "Thanks for the birthday cake, mother.", "syl": ["THANKS", "fer", "thuh", "BERTH-day", "KAYK", "MUH-ther"]}
+    ]
+  },
+  {
+    "id": "u9", "title": "Linking & melody", "emoji": "🎵",
+    "why": "American sentences rise on the most important word and fall at the end of a statement, and the words flow together with no gaps: \"pick it up\" → PIH-kih-DUP. Indian English often keeps words separate and uses a different up-and-down pattern. This unit joins everything from units 1–8.",
+    "how": ["Find the focus word (the new or important information) and lift your voice on it.", "Fall at the end of statements; rise at the end of yes/no questions.", "Link a final consonant to the next vowel: \"turn it off\" → TER-nih-DAWF."],
+    "quiz": "accent", "vs": "in",
+    "words": [
+      {"text": "Pick it up.", "syl": ["PIH", "kih", "DUP"]},
+      {"text": "Turn it off.", "syl": ["TER", "nih", "DAWF"]},
+      {"text": "Is it ready?", "syl": ["iz", "it", "RED-ee"]},
+      {"text": "I'm not sure.", "syl": ["aim", "naht", "SHUR"]},
+      {"text": "That's a great idea.", "syl": ["thats", "uh", "GRAYD", "eye-DEE-uh"]},
+      {"text": "Let me think about it.", "syl": ["LEH", "mee", "THINK", "uh-bow", "dit"]},
+      {"text": "Where are you going?", "syl": ["WEHR", "er", "yuh", "GOH-ing"]},
+      {"text": "Can I ask you something?", "syl": ["kuh", "nai", "ASK", "yuh", "SUM-thing"]},
+      {"text": "It depends on the time.", "syl": ["it", "dih-PEN", "zon", "thuh", "TYM"]},
+      {"text": "We're running out of time.", "syl": ["weer", "RUH-ning", "OW", "duv", "TYM"]}
+    ],
+    "sentences": [
+      {"text": "Let me think about it and get back to you.", "syl": ["LEH", "mee", "THINK", "uh-bow", "dit", "n", "GET", "BAK", "tuh", "yuh"]},
+      {"text": "Can I ask you something about the project?", "syl": ["kuh", "nai", "ASK", "yuh", "SUM-thing", "uh-bowt", "thuh", "PRAH-jekt"]}
+    ]
+  }
+]

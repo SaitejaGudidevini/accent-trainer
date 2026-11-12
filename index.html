@@ -72,6 +72,36 @@
   .drill { display:flex; justify-content: space-between; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
   .drill .f { color: var(--muted); font-size: 12px; }
   details summary { cursor: pointer; color: var(--muted); font-size: 14px; }
+  .tabs { display:flex; gap:6px; margin: 0 0 18px; overflow-x:auto; padding-bottom: 2px; }
+  .tabs button { flex: 0 0 auto; border-radius: 999px; }
+  .tabs button.on { background:#0369a1; border-color:#0369a1; }
+  .tab { display:none; } .tab.on { display:block; }
+  .badge { background: var(--bad); color:#fff; border-radius: 999px; padding: 0 7px; font-size: 12px; margin-left: 4px; }
+  .units { display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  .unit { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; cursor:pointer; text-align:left; }
+  .unit:hover { border-color: var(--muted); }
+  .unit.next { border-color: var(--ref); }
+  .unit .t { font-size: 16px; font-weight: 600; margin: 6px 0; }
+  .steps { display:flex; gap:6px; font-size: 12px; color: var(--muted); flex-wrap: wrap; }
+  .steps span { background:#0f172a; border-radius: 6px; padding: 2px 8px; }
+  .steps span.done { background:#14532d; color: var(--good); }
+  .how li { margin-bottom: 8px; line-height: 1.5; }
+  .why { line-height: 1.6; font-size: 15px; }
+  .chips { display:flex; flex-wrap: wrap; gap: 8px; }
+  .chip { background:#0f172a; border:1px solid var(--line); border-radius: 10px; padding: 8px 12px; cursor: pointer; font-size: 15px; }
+  .chip .s { display:block; font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: var(--stress); }
+  .quizopts { display:flex; gap: 10px; flex-wrap: wrap; margin: 14px 0; }
+  .quizopts button { min-width: 110px; font-size: 18px; padding: 14px 18px; }
+  .quizopts button.right { background:#14532d; border-color: var(--good); }
+  .quizopts button.wrong { background:#7f1d1d; border-color: var(--bad); }
+  .progress { height: 6px; background:#0f172a; border-radius: 3px; overflow:hidden; margin: 8px 0 14px; }
+  .progress div { height:100%; background: var(--ref); transition: width .3s; }
+  .plan li { margin-bottom: 12px; line-height: 1.5; }
+  .grades { display:flex; gap:8px; flex-wrap: wrap; margin-top: 10px; }
+  .grades button.suggest { outline: 2px solid var(--stress); }
+  .src { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .src a { color: var(--ref); }
+  a { color: var(--ref); }
   @media (hover: none) { kbd { display:none; } }
   @media (max-width: 640px) {
     main { padding-left: 14px; padding-right: 14px; }
@@ -93,8 +123,21 @@
 <body>
 <main>
   <h1>American Accent Shadowing</h1>
-  <div class="sub">Listen &rarr; read the syllables &rarr; record yourself &rarr; compare. Every attempt is saved so your coach can find your repeat mistakes.</div>
+  <div class="sub">Learn a sound &rarr; train your ear &rarr; say it &rarr; review it on schedule &rarr; shadow real sentences.</div>
 
+  <nav class="tabs" id="tabs">
+    <button data-tab="today">&#128197; Today</button>
+    <button data-tab="learn">&#128216; Learn</button>
+    <button data-tab="review">&#128257; Review <span class="badge hidden" id="dueBadge"></span></button>
+    <button data-tab="shadow">&#127911; Shadow</button>
+    <button data-tab="coach">&#127919; Coach</button>
+  </nav>
+
+  <section id="tab-today" class="tab"></section>
+  <section id="tab-learn" class="tab"></section>
+  <section id="tab-review" class="tab"></section>
+
+  <section id="tab-shadow" class="tab">
   <div class="bar" id="levels">
     <button data-level="word">Word</button>
     <button data-level="phrase">Phrase</button>
@@ -105,7 +148,8 @@
     <button data-level="coach" id="coachLevel" class="hidden">&#129302; Coach drills</button>
     <button id="next" class="primary">New random &#x21bb;</button>
   </div>
-
+  <div id="shadowSlot">
+  <div id="practice">
   <div class="card">
     <div class="focus hidden" id="focus"></div>
     <div class="words" id="words"></div>
@@ -136,7 +180,12 @@
     <canvas id="chart"></canvas>
     <div class="key"><span style="background:var(--ref)"></span>American <span style="background:var(--you)"></span>You &nbsp;·&nbsp; Top: loudness (each hump = a stressed beat). Bottom: voice pitch (melody). Both stretched to the same length so you can compare shapes.</div>
   </div>
+  <div id="practiceExtra"></div>
+  </div><!-- /practice -->
+  </div><!-- /shadowSlot -->
+  </section>
 
+  <section id="tab-coach" class="tab">
   <div class="card">
     <div class="stats" id="stats"></div>
   </div>
@@ -177,9 +226,10 @@
       <div class="bar" style="margin:12px 0 0"><button id="saveKey" class="small">Save</button><span class="hint" id="keyStatus"></span></div>
     </details>
   </div>
+  </section>
 </main>
 
-<script src="data.js"></script>
+<script src="data.js?v=4"></script>
 <script>
 // ======================================================================
 // State
@@ -359,6 +409,7 @@ async function onRecorded() {
     }
     await dbAdd(rec);
     renderFlaws();
+    window.onScored?.(rec);           // Learn / Review screens listen for finished attempts
   } catch (e) { console.error(e); $('status').textContent = 'Could not analyse that recording.'; }
 }
 
@@ -463,9 +514,12 @@ function compare(ref, me) {
   const mC = corr(idx.map(i => rS[i]), idx.map(i => mS[i]));
   const melody = idx.length < 10 || isNaN(mC) ? null : clamp(mC / 0.75 * 100);
   const ratio = me.dur / ref.dur;
-  const pace = clamp(100 * Math.exp(-Math.abs(Math.log(ratio)) * 1.8));
+  // Short items (single words, phrases): natives vary a lot in speed and pitch, so be gentler there.
+  const short = ref.dur < 2.5;
+  const pace = clamp(100 * Math.exp(-Math.abs(Math.log(ratio)) * (short ? 0.8 : 1.8)));
   const contrast = std(me.env.filter(v => v > 0.05)) / (std(ref.env.filter(v => v > 0.05)) || 1);
-  const overall = clamp(melody == null ? rhythm * 0.7 + pace * 0.3 : rhythm * 0.45 + melody * 0.35 + pace * 0.2);
+  const wR = short ? 0.6 : 0.45, wM = short ? 0.2 : 0.35, wP = 0.2;
+  const overall = clamp(melody == null ? (rhythm * wR + pace * wP) / (wR + wP) : rhythm * wR + melody * wM + pace * wP);
   return { overall, rhythm, melody, pace, ratio, contrast, rE, mE, rS, mS };
 }
 
@@ -876,6 +930,7 @@ function renderCoach() {
   $('nextFocus').textContent = c.next_focus ? 'This week: ' + c.next_focus : '';
   $('drills').innerHTML = c.drills.map((d, i) => `<div class="drill"><div>${esc(d.text)}<div class="f">${esc(d.focus)}</div></div><button class="small" data-drill="${i}">Practice</button></div>`).join('');
   $('drills').querySelectorAll('[data-drill]').forEach(b => b.onclick = () => {
+    window.showTab?.('shadow');
     setLevelButtons('coach'); level = 'coach'; localStorage.setItem('aa-level', 'coach');
     load(c.drills[+b.dataset.drill]); window.scrollTo({ top: 0, behavior: 'smooth' });
   });
@@ -895,7 +950,7 @@ document.querySelectorAll('#levels [data-level]').forEach(b => b.onclick = () =>
 $('next').onclick = () => pick();
 $('playRef').onclick = playRef; $('rec').onclick = toggleRec;
 $('playMe').onclick = playMe; $('playBoth').onclick = playBoth;
-$('drillFlaws').onclick = () => { setLevel('flaws'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+$('drillFlaws').onclick = () => { window.showTab?.('shadow'); setLevel('flaws'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
 $('askCoach').onclick = askCoach;
 $('exportPack').onclick = () => buildPack(false);
 $('backupAll').onclick = () => buildPack(true);
@@ -908,6 +963,7 @@ $('saveKey').onclick = () => {
 };
 document.addEventListener('keydown', e => {
   if (['SELECT', 'INPUT'].includes(e.target.tagName)) return;
+  if (!$('practice').offsetParent) return;   // shortcuts only when the recorder is on screen
   if (e.code === 'Space') { e.preventDefault(); toggleRec(); }
   if (e.key === 'p' || e.key === 'P') playRef();
 });
@@ -915,5 +971,6 @@ document.addEventListener('pointerdown', () => actx && actx.state === 'suspended
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 setLevel(level); renderStats(); renderFlaws(); renderCoach();
 </script>
+<script src="learn.js?v=4"></script>
 </body>
 </html>
