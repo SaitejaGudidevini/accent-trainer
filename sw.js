@@ -1,7 +1,7 @@
 // Offline support.
 // - App files (page, text bank): network first, so new texts show up; fall back to cache offline.
 // - Audio files: cache first. Their names are MD5 fingerprints of the text, so they never go stale.
-const CACHE = 'accent-v4';
+const CACHE = 'accent-v6';
 const SHELL = ['./', 'index.html', 'data.js', 'learn.js', 'manifest.json', 'icons/icon-192.png', 'icons/icon-512.png'];
 
 self.addEventListener('install', e => {

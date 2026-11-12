@@ -94,7 +94,25 @@ function showTab(t) {
   updateBadge();
 }
 window.showTab = showTab;
-function updateBadge() { const n = dueCards().length; $('dueBadge').textContent = n; $('dueBadge').classList.toggle('hidden', !n); }
+function updateBadge() {
+  const n = dueCards().length; $('dueBadge').textContent = n; $('dueBadge').classList.toggle('hidden', !n);
+  const s = streakDays(), U = nextUnit();
+  $('sideStats').innerHTML = `🔥 Streak <b>${s}</b> day${s === 1 ? '' : 's'}<br>🔁 Due today <b>${n}</b><br>📘 Units <b>${CURRICULUM.filter(unitDone).length}/${CURRICULUM.length}</b>` +
+    (U ? `<br><span class="hint">Next: ${U.emoji} ${esc(U.title)}</span>` : '');
+}
+
+// Computer keyboard shortcuts for the Learn tab (the recorder keeps its own: Space / P)
+document.addEventListener('keydown', e => {
+  if (['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName) || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (currentTab !== 'learn' || !openUnit) return;
+  const click = id => { const el = $(id); if (el && !el.disabled) { e.preventDefault(); el.click(); return true; } };
+  if (unitStep === 'read' && e.key === 'Enter') return click('gotIt');
+  if (unitStep !== 'hear') return;
+  if (e.key === 'Enter') return click('qNext') || click('qStart') || click('qSay') || click('qAgain');
+  if (e.key === 'r' || e.key === 'R') return click('qPlay') || click('qAB');
+  const n = parseInt(e.key, 10);
+  if (n >= 1 && n <= 9) { const b = document.querySelector(`[data-opt="${n - 1}"]`); if (b && !b.disabled) { e.preventDefault(); b.click(); } }
+});
 document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
 
 // ======================================================================
@@ -110,6 +128,7 @@ function renderToday() {
     learnLine = `<b>Unit ${CURRICULUM.indexOf(U) + 1}: ${esc(U.title)}</b> — next: ${step}`;
   }
   $('tab-today').innerHTML = `
+  <div class="cols wide-left">
   <div class="card">
     <h2>Your plan for today (about 20 minutes)</h2>
     <ol class="plan">
@@ -120,12 +139,15 @@ function renderToday() {
         <br><button class="small" id="goShadow">Shadow now</button></li>
     </ol>
   </div>
-  <div class="card"><div class="stats">
+  <div class="card"><h2>Progress</h2><div class="stats">
     <div>Units finished<br><b>${doneUnits} / ${CURRICULUM.length}</b></div>
     <div>Words in your deck<br><b>${cards}</b></div>
     <div>Due today<br><b>${due}</b></div>
     <div>Streak<br><b>${streakDays()}</b> day${streakDays() === 1 ? '' : 's'}</div>
-  </div></div>
+  </div>
+  <div class="steps" style="margin-top:14px">${CURRICULUM.map((U, k) => `<span class="${unitDone(U) ? 'done' : ''}" title="${esc(U.title)}">${U.emoji} ${k + 1}</span>`).join('')}</div>
+  </div>
+  </div>
   <div class="card">
     <h2>Why this order works</h2>
     <p class="hint">No method can guarantee a perfect accent — studies show steady gains, mostly in how easily people understand you. These are the parts with the best evidence, and the app follows them in this order:</p>
@@ -207,10 +229,12 @@ function stepRead(U) {
        <div class="chips">${U.words.map((w, k) => `<span class="chip" data-w="${k}">${esc(w.text)}<span class="s">${esc(w.syl.join(' '))}</span>
          ${w.other?.length ? `<button class="small" data-o="${k}" style="margin-top:6px">${U.vs === 'gb' ? '🇬🇧' : '🇮🇳'} ${vsName}</button>` : ''}</span>`).join('')}</div>`;
   $('unitBody').innerHTML = `
+    <div class="cols">
     <div class="card"><h3>Why it matters</h3><p class="why">${esc(U.why)}</p>
       <h3>How to make it</h3><ol class="how">${U.how.map(h => `<li>${esc(h)}</li>`).join('')}</ol></div>
     <div class="card"><h3>Hear it</h3>${examples}</div>
-    <div class="bar"><button class="primary" id="gotIt">Got it → Train your ear</button></div>`;
+    </div>
+    <div class="bar"><button class="primary" id="gotIt">Got it → Train your ear <kbd>Enter</kbd></button></div>`;
   $('unitBody').querySelectorAll('[data-w]').forEach(c => c.onclick = e => { if (e.target.dataset.o == null) playClip(U.words[+c.dataset.w].audio); });
   $('unitBody').querySelectorAll('[data-o]').forEach(b => b.onclick = e => { e.stopPropagation(); playClip(rnd(U.words[+b.dataset.o].other).src); });
   $('unitBody').querySelectorAll('[data-pa]').forEach(c => c.onclick = async () => {
@@ -279,7 +303,8 @@ function renderQuestion() {
     <div class="bar" style="margin-top:12px">${q.type === 'accent'
       ? '<button id="qA">▶ A</button><button id="qB">▶ B</button><button id="qAB" class="small">▶ A then B</button>'
       : '<button id="qPlay" class="primary">▶ Play again</button>'}</div>
-    <div class="quizopts">${opts.map((o, k) => `<button data-opt="${k}">${esc(o)}</button>`).join('')}</div>
+    <div class="quizopts">${opts.map((o, k) => `<button data-opt="${k}">${esc(o)}<kbd>${k + 1}</kbd></button>`).join('')}</div>
+    <div class="hint"><span class="keyhint">Keyboard: <kbd>1</kbd> <kbd>2</kbd> … to answer · <kbd>R</kbd> replay · <kbd>Enter</kbd> next</span></div>
     <div id="qFeedback"></div></div>`;
   if (q.type === 'accent') { $('qA').onclick = () => playClip(q.a.src); $('qB').onclick = () => playClip(q.b.src); $('qAB').onclick = () => playQuestion(q); }
   else $('qPlay').onclick = () => playQuestion(q);
@@ -329,9 +354,11 @@ function stepSay(U) {
   if (sayIndex >= U.words.length) sayIndex = 0;
   $('unitBody').innerHTML = `
     <p class="hint">Listen, then record each one. Read the gold syllables. Every word you record goes into your Review deck, so you'll see it again tomorrow, then later and later.</p>
-    <div class="chips" id="sayList"></div>
-    <div id="sayPractice" style="margin-top:14px"></div>
-    <div id="sayDone"></div>`;
+    <div id="sayDone"></div>
+    <div class="cols say">
+      <div class="chips" id="sayList" style="margin-bottom:14px"></div>
+      <div id="sayPractice"></div>
+    </div>`;
   const list = () => {
     const p2 = unitProgress(U.id);
     $('sayList').innerHTML = U.words.map((w, k) => {
@@ -340,6 +367,8 @@ function stepSay(U) {
     }).join('');
     $('sayList').querySelectorAll('[data-k]').forEach(c => c.onclick = () => { sayIndex = +c.dataset.k; list(); practise(U.words[sayIndex], U); });
     const d = stepsDone(U);
+    const sb = document.querySelector('[data-step="say"]');
+    if (sb) sb.textContent = `${d.say ? '✅ ' : ''}3 Say it (${d.said}/${U.words.length})`;
     $('sayDone').innerHTML = d.say ? `<div class="card"><h2>✅ Unit complete</h2><p class="why">All ${U.words.length} words are in your Review deck. Now try this unit's sentences in Shadow.</p>
       <div class="bar"><button class="primary" id="shadowUnit">🎧 Shadow this unit's sentences</button>${CURRICULUM[CURRICULUM.indexOf(U) + 1] ? '<button id="nextUnitBtn">Next unit →</button>' : ''}</div></div>` : '';
     if (d.say) {

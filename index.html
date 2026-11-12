@@ -102,6 +102,48 @@
   .src { font-size: 13px; color: var(--muted); line-height: 1.6; }
   .src a { color: var(--ref); }
   a { color: var(--ref); }
+  .content { min-width: 0; }
+  .cols { display:grid; grid-template-columns: 1fr; gap: 0 16px; align-items: start; }
+  .sideStats { display:none; }
+  .quizopts kbd { margin-left: 8px; opacity: .7; }
+  @media (hover: none) { .keyhint { display:none; } }
+
+  /* ---------- phone: app-style bottom tab bar ---------- */
+  @media (max-width: 819px) {
+    .tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; margin: 0; gap: 4px; overflow: visible;
+            background: rgba(15,23,42,.97); border-top: 1px solid var(--line); padding: 6px 6px max(6px, env(safe-area-inset-bottom)); }
+    .tabs button { flex: 1 1 0; min-width: 0; border-radius: 10px; padding: 8px 2px; font-size: 12px; line-height: 1.3; }
+    main { padding-bottom: calc(90px + env(safe-area-inset-bottom)); }
+  }
+  /* ---------- tablet & desktop ---------- */
+  @media (min-width: 820px) {
+    .cols { grid-template-columns: 1fr 1fr; }
+    .cols.wide-left { grid-template-columns: 2fr 1fr; }
+    .cols.say { grid-template-columns: 240px 1fr; }
+    .cols.say .chips { flex-direction: column; }
+    .cols.say .chip { display:flex; justify-content: space-between; align-items: center; }
+    .cols.say .chip .s { display:inline; margin-left: 10px; }
+    .resGrid { display:grid; grid-template-columns: 1fr 1.25fr; gap: 20px; align-items: start; }
+    .resGrid .scores { grid-template-columns: 1fr 1fr; }
+    #tab-coach.on { display:grid; grid-template-columns: 1.3fr 1fr; gap: 0 16px; align-items: start; }
+    #tab-coach > :nth-child(1) { grid-column: 1 / -1; }
+    #tab-coach > :nth-child(2) { grid-column: 1; grid-row: 2 / span 2; }
+    #tab-coach > :nth-child(3) { grid-column: 2; grid-row: 2; }
+    #tab-coach > :nth-child(4) { grid-column: 2; grid-row: 3; }
+    #tab-coach:has(#coachCard.hidden) > :nth-child(4) { grid-row: 2; }
+    #tab-coach .grid2 { grid-template-columns: 1fr; }
+  }
+  @media (min-width: 1100px) {
+    main { max-width: 1360px; display:grid; grid-template-columns: 230px minmax(0, 1fr); gap: 32px; align-items: start; padding-left: 28px; padding-right: 28px; }
+    .side { position: sticky; top: 24px; }
+    .side h1 { font-size: 20px; line-height: 1.25; }
+    .side .sub { font-size: 13px; }
+    .tabs { flex-direction: column; overflow: visible; margin-bottom: 18px; }
+    .tabs button { text-align: left; width: 100%; border-radius: 10px; padding: 12px 14px; }
+    .sideStats { display:block; background:var(--card); border:1px solid var(--line); border-radius: 14px; padding: 14px; font-size: 13px; color: var(--muted); line-height: 1.9; }
+    .sideStats b { color: var(--text); font-size: 15px; }
+    canvas { height: 280px; }
+  }
   @media (hover: none) { kbd { display:none; } }
   @media (max-width: 640px) {
     main { padding-left: 14px; padding-right: 14px; }
@@ -122,6 +164,7 @@
 </head>
 <body>
 <main>
+  <aside class="side">
   <h1>American Accent Shadowing</h1>
   <div class="sub">Learn a sound &rarr; train your ear &rarr; say it &rarr; review it on schedule &rarr; shadow real sentences.</div>
 
@@ -132,7 +175,10 @@
     <button data-tab="shadow">&#127911; Shadow</button>
     <button data-tab="coach">&#127919; Coach</button>
   </nav>
+  <div class="sideStats" id="sideStats"></div>
+  </aside>
 
+  <div class="content">
   <section id="tab-today" class="tab"></section>
   <section id="tab-learn" class="tab"></section>
   <section id="tab-review" class="tab"></section>
@@ -170,6 +216,7 @@
   </div>
 
   <div class="card hidden" id="result">
+    <div class="resGrid"><div>
     <div class="scores">
       <div class="score"><div class="n" id="sOverall">–</div><div class="l">Overall</div></div>
       <div class="score"><div class="n" id="sRhythm">–</div><div class="l">Rhythm (stress beats)</div></div>
@@ -177,8 +224,10 @@
       <div class="score"><div class="n" id="sPace">–</div><div class="l">Pace</div></div>
     </div>
     <ul class="tips" id="tips"></ul>
+    </div><div>
     <canvas id="chart"></canvas>
     <div class="key"><span style="background:var(--ref)"></span>American <span style="background:var(--you)"></span>You &nbsp;·&nbsp; Top: loudness (each hump = a stressed beat). Bottom: voice pitch (melody). Both stretched to the same length so you can compare shapes.</div>
+    </div></div>
   </div>
   <div id="practiceExtra"></div>
   </div><!-- /practice -->
@@ -227,9 +276,10 @@
     </details>
   </div>
   </section>
+  </div><!-- /content -->
 </main>
 
-<script src="data.js?v=4"></script>
+<script src="data.js?v=6"></script>
 <script>
 // ======================================================================
 // State
@@ -645,7 +695,7 @@ function showResult(r, words) {
   if (r.melody != null && r.melody < 55) tips.push('Your voice melody differs. Americans usually rise on the main stressed word, then fall at the end of a statement. Hum the sentence first, then add the words.');
   if (r.ratio > 1.2) tips.push(`You were ${Math.round((r.ratio - 1) * 100)}% slower. Link words together ("geh-dit" not "get / it").`);
   else if (r.ratio < 0.83) tips.push(`You were ${Math.round((1 - r.ratio) * 100)}% faster — slow down a little and let stressed syllables be long.`);
-  if (!tips.length) tips.push('Great match! Try a longer level or switch to "Any".');
+  if (!tips.length) tips.push(item.level === 'unit' ? 'Great match! Move to the next word.' : 'Great match! Try a longer level or switch to "Any".');
   $('tips').innerHTML = tips.map(t => `<li>${t}</li>`).join('');
   draw(r);
 }
@@ -738,7 +788,7 @@ async function renderFlaws() {
     st.weakest.map(w => `<tr><td><b>${esc(w.w)}</b><br><span class="hint">${esc(w.syl)} · ${w.n}×</span></td><td>${meter(w.avg)}${w.avg}</td><td class="hint">${esc(ISSUES[w.top].long)}</td></tr>`).join('') + '</table>'
     : '<div class="hint">No repeat problem words yet — nice.</div>';
   $('issueList').innerHTML = st.issues.length ? '<table>' + st.issues.slice(0, 6).map(([k, n]) => `<tr><td>${esc(ISSUES[k].long)}</td><td><b>${n}×</b></td></tr>`).join('') + '</table>' : '<div class="hint">None yet.</div>';
-  $('groupList').innerHTML = '<table>' + st.groups.map(([k, v, n]) => `<tr><td>${esc(GROUPS[k])}<br><span class="hint">${n} words</span></td><td>${meter(v)}${v}</td></tr>`).join('') + '</table>';
+  $('groupList').innerHTML = '<table>' + st.groups.map(([k, v, n]) => `<tr><td>${esc(GROUPS[k])}<br><span class="hint">${n} word${n === 1 ? '' : 's'}</span></td><td>${meter(v)}${v}</td></tr>`).join('') + '</table>';
 }
 
 // ======================================================================
@@ -971,6 +1021,6 @@ document.addEventListener('pointerdown', () => actx && actx.state === 'suspended
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 setLevel(level); renderStats(); renderFlaws(); renderCoach();
 </script>
-<script src="learn.js?v=4"></script>
+<script src="learn.js?v=6"></script>
 </body>
 </html>
