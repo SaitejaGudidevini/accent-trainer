@@ -279,7 +279,7 @@
   </div><!-- /content -->
 </main>
 
-<script src="data.js?v=6"></script>
+<script src="data.js?v=7"></script>
 <script>
 // ======================================================================
 // State
@@ -524,8 +524,14 @@ function analyze(audioBuf) {
     }
     pitch.push(best > 0.6 ? sr / bestLag : 0);
   }
-  // trim leading/trailing silence
-  const active = db.map(d => d > top - 35);
+  // trim leading/trailing silence. A sound only counts as speech if it lasts 80 ms or more,
+  // so the click of pressing Record (or a tap on the desk) doesn't count as "you started talking".
+  const loud = db.map(d => d > top - 35), active = loud.map(() => false), MIN_RUN = 8;
+  for (let i = 0, run = 0; i < loud.length; i++) {
+    run = loud[i] ? run + 1 : 0;
+    if (run >= MIN_RUN) for (let k = i - run + 1; k <= i; k++) active[k] = true;
+  }
+  if (!active.includes(true)) loud.forEach((v, i) => active[i] = v);   // very short sound: fall back
   let a = active.indexOf(true), b = active.lastIndexOf(true);
   a = Math.max(0, a - 3); b = Math.min(db.length - 1, b + 3);
   const D = db.slice(a, b + 1), P = pitch.slice(a, b + 1), S = spec.slice(a, b + 1);
@@ -1021,6 +1027,6 @@ document.addEventListener('pointerdown', () => actx && actx.state === 'suspended
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 setLevel(level); renderStats(); renderFlaws(); renderCoach();
 </script>
-<script src="learn.js?v=6"></script>
+<script src="learn.js?v=7"></script>
 </body>
 </html>
